@@ -1,4 +1,3 @@
-use std::io::{self, Write};
 use std::process::Command;
 
 use clap::{ArgGroup, Parser, ValueEnum};
@@ -40,7 +39,7 @@ enum FileType {
     Targz,
 }
 
-fn get_file_type(file_path: String) -> FileType {
+fn get_file_type(file_path: &std::string::String) -> FileType {
     let output = Command::new("file")
         .arg(file_path)
         .output()
@@ -60,6 +59,60 @@ fn get_file_type(file_path: String) -> FileType {
     }
 }
 
+fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::string::String) {
+    match file_type {
+        FileType::Zip => {
+            println!("Zip");
+            let output = Command::new("zip")
+                .arg("-r")
+                .arg(dst_path)
+                .arg(src_path)
+                .output()
+                .expect("file command failed");
+
+            if !output.status.success() {
+                panic!("file command failed");
+            }
+        }
+        FileType::Tar => {
+            println!("Tar");
+        }
+        FileType::Tarbz2 => {
+            println!("Tarbz2");
+        }
+        FileType::Targz => {
+            println!("Targz");
+        }
+    }
+}
+
+fn unpack(file_type: FileType, src_path: &std::string::String, dst_path: &std::string::String) {
+    match file_type {
+        FileType::Zip => {
+            println!("Zip");
+            let output = Command::new("unzip")
+                .arg(src_path)
+                .arg("-d")
+                .arg(dst_path)
+                .output()
+                .expect("file command failed");
+
+            if !output.status.success() {
+                panic!("file command failed");
+            }
+        }
+        FileType::Tar => {
+            println!("Tar");
+        }
+        FileType::Tarbz2 => {
+            println!("Tarbz2");
+        }
+        FileType::Targz => {
+            println!("Targz");
+        }
+    }
+}
+
 fn main() {
     let args = Args::parse();
 
@@ -68,41 +121,11 @@ fn main() {
 
     if args.compress {
         println!("Compress");
-
-        match args.file_type.unwrap() {
-            FileType::Zip => {
-                println!("Zip");
-            }
-            FileType::Tar => {
-                println!("Tar");
-            }
-            FileType::Tarbz2 => {
-                println!("Tarbz2");
-            }
-            FileType::Targz => {
-                println!("Targz");
-            }
-        }
+        pack(args.file_type.unwrap(), &args.input, &args.output);
     }
     if args.decompress {
         println!("Decompress");
-        let file_type = get_file_type(args.input);
-
-        match file_type {
-            FileType::Zip => {
-                println!("Zip");
-            }
-            FileType::Tar => {
-                println!("Tar");
-            }
-            FileType::Tarbz2 => {
-                println!("Tarbz2");
-            }
-            FileType::Targz => {
-                println!("Targz");
-            }
-        }
+        let file_type = get_file_type(&args.input);
+        unpack(file_type, &args.input, &args.output);
     }
-
-    // TODO: get file type
 }
