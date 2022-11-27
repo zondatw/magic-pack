@@ -76,6 +76,16 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
         }
         FileType::Tar => {
             println!("Tar");
+            let output = Command::new("tar")
+                .arg("cvf")
+                .arg(dst_path)
+                .arg(src_path)
+                .output()
+                .expect("tar command failed");
+
+            if !output.status.success() {
+                panic!("tar command failed");
+            }
         }
         FileType::Tarbz2 => {
             println!("Tarbz2");
@@ -103,6 +113,17 @@ fn unpack(file_type: FileType, src_path: &std::string::String, dst_path: &std::s
         }
         FileType::Tar => {
             println!("Tar");
+            let output = Command::new("tar")
+                .arg("xvf")
+                .arg(src_path)
+                .arg("-C")
+                .arg(dst_path)
+                .output()
+                .expect("tar command failed");
+
+            if !output.status.success() {
+                panic!("tar command failed");
+            }
         }
         FileType::Tarbz2 => {
             println!("Tarbz2");
