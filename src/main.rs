@@ -68,10 +68,10 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
                 .arg(dst_path)
                 .arg(src_path)
                 .output()
-                .expect("file command failed");
+                .expect("zip command failed");
 
             if !output.status.success() {
-                panic!("file command failed");
+                panic!("zip command failed");
             }
         }
         FileType::Tar => {
@@ -95,10 +95,10 @@ fn unpack(file_type: FileType, src_path: &std::string::String, dst_path: &std::s
                 .arg("-d")
                 .arg(dst_path)
                 .output()
-                .expect("file command failed");
+                .expect("unzip command failed");
 
             if !output.status.success() {
-                panic!("file command failed");
+                panic!("unzip command failed");
             }
         }
         FileType::Tar => {
