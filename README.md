@@ -1,5 +1,13 @@
 # Magic pack
 
+## Prerequisites
+
+Install following commands:
+* file
+* zip
+* unzip
+* tar
+
 ## Command
 
 ```shell
