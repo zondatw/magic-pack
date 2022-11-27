@@ -102,6 +102,16 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
         }
         FileType::Targz => {
             println!("Targz");
+            let output = Command::new("tar")
+                .arg("zcvf")
+                .arg(dst_path)
+                .arg(src_path)
+                .output()
+                .expect("tar.gz command failed");
+
+            if !output.status.success() {
+                panic!("tar.gz command failed");
+            }
         }
     }
 }
@@ -151,6 +161,17 @@ fn unpack(file_type: FileType, src_path: &std::string::String, dst_path: &std::s
         }
         FileType::Targz => {
             println!("Targz");
+            let output = Command::new("tar")
+                .arg("zxvf")
+                .arg(src_path)
+                .arg("-C")
+                .arg(dst_path)
+                .output()
+                .expect("tar.gz command failed");
+
+            if !output.status.success() {
+                panic!("tar.gz command failed");
+            }
         }
     }
 }
