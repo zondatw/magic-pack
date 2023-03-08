@@ -1,5 +1,8 @@
+use bzip2;
+use bzip2::write::BzEncoder;
+use flate2;
+use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
-use flate2::Compression;
 use std::fs::File;
 use std::process::Command;
 use tar;
@@ -89,21 +92,17 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
         }
         FileType::Tarbz2 => {
             println!("Tarbz2");
-            let output = Command::new("tar")
-                .arg("jcvf")
-                .arg(dst_path)
-                .arg(src_path)
-                .output()
-                .expect("tar.bz2 command failed");
-
-            if !output.status.success() {
-                panic!("tar.bz2 command failed");
-            }
+            let tar_bz2_file = File::create(dst_path).expect("tar.bz2 create failed");
+            let enc = BzEncoder::new(tar_bz2_file, bzip2::Compression::default());
+            let mut tar_bz2_builder = tar::Builder::new(enc);
+            tar_bz2_builder
+                .append_path(src_path)
+                .expect("tar.bz2 append failed");
         }
         FileType::Targz => {
             println!("Targz");
             let tar_gz_file = File::create(dst_path).expect("tar.gz create failed");
-            let enc = GzEncoder::new(tar_gz_file, Compression::default());
+            let enc = GzEncoder::new(tar_gz_file, flate2::Compression::default());
             let mut tar_gz_builder = tar::Builder::new(enc);
             tar_gz_builder
                 .append_path(src_path)
