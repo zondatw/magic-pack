@@ -148,17 +148,10 @@ fn unpack(file_type: FileType, src_path: &std::string::String, dst_path: &std::s
         }
         FileType::Targz => {
             println!("Targz");
-            let output = Command::new("tar")
-                .arg("zxvf")
-                .arg(src_path)
-                .arg("-C")
-                .arg(dst_path)
-                .output()
-                .expect("tar.gz command failed");
-
-            if !output.status.success() {
-                panic!("tar.gz command failed");
-            }
+            let tar_gz_file = File::open(src_path).expect("tar.gz open failed");
+            let dec = GzDecoder::new(tar_gz_file);
+            let mut archive = Archive::new(dec);
+            archive.unpack(dst_path).expect("tar.gz unpack failed");
         }
     }
 }
