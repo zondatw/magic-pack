@@ -6,7 +6,6 @@ Install following commands:
 * file
 * zip
 * unzip
-* tar
 
 ## Command
 
