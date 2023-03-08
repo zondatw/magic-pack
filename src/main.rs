@@ -1,4 +1,8 @@
+use flate2::write::GzEncoder;
+use flate2::Compression;
+use std::fs::File;
 use std::process::Command;
+use tar;
 
 use clap::{ArgGroup, Parser, ValueEnum};
 
@@ -102,16 +106,12 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
         }
         FileType::Targz => {
             println!("Targz");
-            let output = Command::new("tar")
-                .arg("zcvf")
-                .arg(dst_path)
-                .arg(src_path)
-                .output()
-                .expect("tar.gz command failed");
-
-            if !output.status.success() {
-                panic!("tar.gz command failed");
-            }
+            let tar_gz_file = File::create(dst_path).expect("tar.gz create failed");
+            let enc = GzEncoder::new(tar_gz_file, Compression::default());
+            let mut tar_gz_builder = tar::Builder::new(enc);
+            tar_gz_builder
+                .append_path(src_path)
+                .expect("tar.gz append failed");
         }
     }
 }

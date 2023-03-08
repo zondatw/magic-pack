@@ -12,3 +12,5 @@ license = "MIT"
 
 [dependencies]
 clap = { version = "4.0.26", features = ["derive"] }
+flate2 = "1.0"
+tar = "0.4.38"
