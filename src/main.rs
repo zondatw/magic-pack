@@ -3,6 +3,7 @@ use flate2::Compression;
 use std::fs::File;
 use std::process::Command;
 use tar;
+use tar::Archive;
 
 use clap::{ArgGroup, Parser, ValueEnum};
 
@@ -80,16 +81,11 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
         }
         FileType::Tar => {
             println!("Tar");
-            let output = Command::new("tar")
-                .arg("cvf")
-                .arg(dst_path)
-                .arg(src_path)
-                .output()
-                .expect("tar command failed");
-
-            if !output.status.success() {
-                panic!("tar command failed");
-            }
+            let tar_file = File::create(dst_path).expect("tar create failed");
+            let mut tar_builder = tar::Builder::new(tar_file);
+            tar_builder
+                .append_path(src_path)
+                .expect("tar append failed");
         }
         FileType::Tarbz2 => {
             println!("Tarbz2");
