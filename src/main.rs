@@ -1,4 +1,5 @@
 use bzip2;
+use bzip2::read::BzDecoder;
 use bzip2::write::BzEncoder;
 use flate2;
 use flate2::read::GzDecoder;
@@ -134,17 +135,10 @@ fn unpack(file_type: FileType, src_path: &std::string::String, dst_path: &std::s
         }
         FileType::Tarbz2 => {
             println!("Tarbz2");
-            let output = Command::new("tar")
-                .arg("jxvf")
-                .arg(src_path)
-                .arg("-C")
-                .arg(dst_path)
-                .output()
-                .expect("tar.bz2 command failed");
-
-            if !output.status.success() {
-                panic!("tar.bz2 command failed");
-            }
+            let tar_bz2_file = File::open(src_path).expect("tar.bz2 open failed");
+            let dec = BzDecoder::new(tar_bz2_file);
+            let mut archive = Archive::new(dec);
+            archive.unpack(dst_path).expect("tar.bz2 unpack failed");
         }
         FileType::Targz => {
             println!("Targz");
