@@ -4,26 +4,24 @@
 
 Install following commands:
 * file
-* zip
-* unzip
 
 ## Command
 
 ```shell
 // zip
-./magic-pack -c -f zip -i src/* -o temp/temp.zip
+./magic-pack -c -f zip -i src -o temp/temp.zip
 ./magic-pack -d -i temp/temp.zip -o temp/.
 
 // tar
-./magic-pack -c -f tar -i src/* -o temp/temp.tar
+./magic-pack -c -f tar -i src -o temp/temp.tar
 ./magic-pack -d -i temp/temp.tar -o temp/.
 
 // tar.bz2
-./magic-pack -c -f tarbz2 -i src/* -o temp/temp.tar.bz2
+./magic-pack -c -f tarbz2 -i src -o temp/temp.tar.bz2
 ./magic-pack -d -i temp/temp.tar.bz2 -o temp/.
  
 // tar.gz
-./magic-pack -c -f targz -i src/* -o temp/temp.tar.gz
+./magic-pack -c -f targz -i src -o temp/temp.tar.gz
 ./magic-pack -d -i temp/temp.tar.gz -o temp/.
 ```
 
