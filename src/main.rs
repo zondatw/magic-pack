@@ -1,15 +1,20 @@
+use std::fs;
+use std::fs::File;
+use std::io;
+use std::io::BufReader;
+use std::path::PathBuf;
+use std::process::Command;
+
 use bzip2;
 use bzip2::read::BzDecoder;
 use bzip2::write::BzEncoder;
+use clap::{ArgGroup, Parser, ValueEnum};
 use flate2;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
-use std::fs::File;
-use std::process::Command;
 use tar;
 use tar::Archive;
-
-use clap::{ArgGroup, Parser, ValueEnum};
+use zip;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -116,15 +121,25 @@ fn unpack(file_type: FileType, src_path: &std::string::String, dst_path: &std::s
     match file_type {
         FileType::Zip => {
             println!("Zip");
-            let output = Command::new("unzip")
-                .arg(src_path)
-                .arg("-d")
-                .arg(dst_path)
-                .output()
-                .expect("unzip command failed");
+            let zip_file = File::open(src_path).expect("zip open failed");
+            let mut zip_archive =
+                zip::ZipArchive::new(BufReader::new(zip_file)).expect("zip open to archive failed");
 
-            if !output.status.success() {
-                panic!("unzip command failed");
+            for i in 0..zip_archive.len() {
+                let mut file = zip_archive.by_index(i).expect("zip index not exist");
+                let outpath = &PathBuf::from(dst_path).join(file.mangled_name());
+
+                if (&*file.name()).ends_with('/') {
+                    fs::create_dir_all(&outpath).expect("zip create dir all failed");
+                } else {
+                    if let Some(p) = outpath.parent() {
+                        if !p.exists() {
+                            fs::create_dir_all(&p).expect("zip create dir all failed");
+                        }
+                    }
+                    let mut outfile = fs::File::create(&outpath).expect("zip create file failed");
+                    io::copy(&mut file, &mut outfile).expect("zip file copy failed");
+                }
             }
         }
         FileType::Tar => {
