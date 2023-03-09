@@ -2,6 +2,7 @@ use std::fs;
 use std::fs::File;
 use std::io;
 use std::io::BufReader;
+use std::io::{Read, Seek, Write};
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -14,7 +15,9 @@ use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use tar;
 use tar::Archive;
+use walkdir::{DirEntry, WalkDir};
 use zip;
+use zip::write::FileOptions;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -73,20 +76,60 @@ fn get_file_type(file_path: &std::string::String) -> FileType {
     }
 }
 
+fn zip_dir<T>(
+    it: &mut dyn Iterator<Item = DirEntry>,
+    writer: T,
+    method: zip::CompressionMethod,
+) -> zip::result::ZipResult<()>
+where
+    T: Write + Seek,
+{
+    let mut zip = zip::ZipWriter::new(writer);
+    let options = FileOptions::default()
+        .compression_method(method)
+        .unix_permissions(0o755);
+
+    let mut buffer = Vec::new();
+    for entry in it {
+        let path = entry.path();
+
+        if path.is_file() {
+            zip.start_file(
+                path.to_owned().into_os_string().into_string().unwrap(),
+                options,
+            )
+            .expect("zip start file from path failed");
+            let mut f = File::open(path).expect("zip open compressing-file failed");
+
+            f.read_to_end(&mut buffer)
+                .expect("zip read compressing-file failed");
+            zip.write_all(&buffer).expect("zip compress file failed");
+            buffer.clear();
+        } else if !path.as_os_str().is_empty() {
+            zip.add_directory(
+                path.to_owned().into_os_string().into_string().unwrap(),
+                options,
+            )
+            .expect("zip add dir from path failed");
+        }
+    }
+    zip.finish().expect("zip compress failed");
+    Result::Ok(())
+}
+
 fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::string::String) {
     match file_type {
         FileType::Zip => {
             println!("Zip");
-            let output = Command::new("zip")
-                .arg("-r")
-                .arg(dst_path)
-                .arg(src_path)
-                .output()
-                .expect("zip command failed");
-
-            if !output.status.success() {
-                panic!("zip command failed");
-            }
+            let zip_file = File::create(dst_path).expect("zip create failed");
+            let walkdir = WalkDir::new(src_path);
+            let it = walkdir.into_iter();
+            zip_dir(
+                &mut it.filter_map(|e| e.ok()),
+                zip_file,
+                zip::CompressionMethod::Stored,
+            )
+            .expect("zip compress dir failed");
         }
         FileType::Tar => {
             println!("Tar");
