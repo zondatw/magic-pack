@@ -117,6 +117,22 @@ where
     Result::Ok(())
 }
 
+fn tar_dir<T>(
+    it: &mut dyn Iterator<Item = DirEntry>,
+    tar_file: T,
+)
+where
+    T: Write + Seek,
+{
+    let mut tar_builder = tar::Builder::new(tar_file);
+    for entry in it {
+        let path = entry.path();
+        tar_builder
+            .append_path(path)
+            .expect("tar append failed");
+    }
+}
+
 fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::string::String) {
     match file_type {
         FileType::Zip => {
@@ -134,10 +150,10 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
         FileType::Tar => {
             println!("Tar");
             let tar_file = File::create(dst_path).expect("tar create failed");
-            let mut tar_builder = tar::Builder::new(tar_file);
-            tar_builder
-                .append_path(src_path)
-                .expect("tar append failed");
+            let walkdir = WalkDir::new(src_path);
+            let it = walkdir.into_iter();
+            tar_dir(
+                &mut it.filter_map(|e| e.ok()), tar_file);
         }
         FileType::Tarbz2 => {
             println!("Tarbz2");
