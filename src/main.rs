@@ -133,6 +133,23 @@ where
     }
 }
 
+fn tar_bz2_dir<T>(
+    it: &mut dyn Iterator<Item = DirEntry>,
+    tar_bz2_file: T,
+)
+where
+    T: Write + Seek,
+{
+    let enc = BzEncoder::new(tar_bz2_file, bzip2::Compression::default());
+    let mut tar_bz2_builder = tar::Builder::new(enc);
+    for entry in it {
+        let path = entry.path();
+        tar_bz2_builder
+            .append_path(path)
+            .expect("tar.bz2 append failed");
+    }
+}
+
 fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::string::String) {
     match file_type {
         FileType::Zip => {
@@ -158,11 +175,10 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
         FileType::Tarbz2 => {
             println!("Tarbz2");
             let tar_bz2_file = File::create(dst_path).expect("tar.bz2 create failed");
-            let enc = BzEncoder::new(tar_bz2_file, bzip2::Compression::default());
-            let mut tar_bz2_builder = tar::Builder::new(enc);
-            tar_bz2_builder
-                .append_path(src_path)
-                .expect("tar.bz2 append failed");
+            let walkdir = WalkDir::new(src_path);
+            let it = walkdir.into_iter();
+            tar_bz2_dir(
+                &mut it.filter_map(|e| e.ok()), tar_bz2_file);
         }
         FileType::Targz => {
             println!("Targz");
