@@ -150,6 +150,23 @@ where
     }
 }
 
+fn tar_gz_dir<T>(
+    it: &mut dyn Iterator<Item = DirEntry>,
+    tar_gz_file: T,
+)
+where
+    T: Write + Seek,
+{
+    let enc = GzEncoder::new(tar_gz_file, flate2::Compression::default());
+    let mut tar_gz_builder = tar::Builder::new(enc);
+    for entry in it {
+        let path = entry.path();
+        tar_gz_builder
+            .append_path(path)
+            .expect("tar.gz append failed");
+    }
+}
+
 fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::string::String) {
     match file_type {
         FileType::Zip => {
@@ -183,11 +200,10 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
         FileType::Targz => {
             println!("Targz");
             let tar_gz_file = File::create(dst_path).expect("tar.gz create failed");
-            let enc = GzEncoder::new(tar_gz_file, flate2::Compression::default());
-            let mut tar_gz_builder = tar::Builder::new(enc);
-            tar_gz_builder
-                .append_path(src_path)
-                .expect("tar.gz append failed");
+            let walkdir = WalkDir::new(src_path);
+            let it = walkdir.into_iter();
+            tar_gz_dir(
+                &mut it.filter_map(|e| e.ok()), tar_gz_file);
         }
     }
 }
