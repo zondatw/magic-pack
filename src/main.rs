@@ -10,11 +10,6 @@ use std::io::{Read, Seek, Write};
 use std::path::PathBuf;
 use std::process::Command;
 
-use bzip2;
-use bzip2::read::BzDecoder;
-use bzip2::write::BzEncoder;
-use tar;
-use tar::Archive;
 use walkdir::{DirEntry, WalkDir};
 use zip;
 use zip::write::FileOptions;
@@ -83,19 +78,6 @@ where
     Result::Ok(())
 }
 
-fn tar_bz2_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, tar_bz2_file: T)
-where
-    T: Write + Seek,
-{
-    let enc = BzEncoder::new(tar_bz2_file, bzip2::Compression::default());
-    let mut tar_bz2_builder = tar::Builder::new(enc);
-    for entry in it {
-        let path = entry.path();
-        tar_bz2_builder
-            .append_path(path)
-            .expect("tar.bz2 append failed");
-    }
-}
 fn pack(
     file_type: enums::FileType,
     src_path: &std::string::String,
@@ -120,10 +102,7 @@ fn pack(
         }
         enums::FileType::Tarbz2 => {
             println!("Tarbz2");
-            let tar_bz2_file = File::create(dst_path).expect("tar.bz2 create failed");
-            let walkdir = WalkDir::new(src_path);
-            let it = walkdir.into_iter();
-            tar_bz2_dir(&mut it.filter_map(|e| e.ok()), tar_bz2_file);
+            modules::compression::tar_bz2::compress(src_path, dst_path);
         }
         enums::FileType::Targz => {
             println!("Targz");
@@ -167,10 +146,7 @@ fn unpack(
         }
         enums::FileType::Tarbz2 => {
             println!("Tarbz2");
-            let tar_bz2_file = File::open(src_path).expect("tar.bz2 open failed");
-            let dec = BzDecoder::new(tar_bz2_file);
-            let mut archive = Archive::new(dec);
-            archive.unpack(dst_path).expect("tar.bz2 unpack failed");
+            modules::compression::tar_bz2::decompress(src_path, dst_path);
         }
         enums::FileType::Targz => {
             println!("Targz");
