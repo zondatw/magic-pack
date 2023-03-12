@@ -1,3 +1,6 @@
+mod cli;
+mod contents;
+
 use std::fs;
 use std::fs::File;
 use std::io;
@@ -19,8 +22,7 @@ use walkdir::{DirEntry, WalkDir};
 use zip;
 use zip::write::FileOptions;
 
-mod cli;
-mod enums;
+use crate::contents::enums;
 
 fn get_file_type(file_path: &std::string::String) -> enums::FileType {
     let output = Command::new("file")
