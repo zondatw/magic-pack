@@ -9,7 +9,7 @@ use std::process::Command;
 use bzip2;
 use bzip2::read::BzDecoder;
 use bzip2::write::BzEncoder;
-use clap::{ArgGroup, Parser, ValueEnum};
+use clap::{ArgGroup, Parser};
 use flate2;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -18,6 +18,8 @@ use tar::Archive;
 use walkdir::{DirEntry, WalkDir};
 use zip;
 use zip::write::FileOptions;
+
+mod enums;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -33,7 +35,7 @@ struct Args {
 
     // file type
     #[arg(short, value_enum)]
-    file_type: Option<FileType>,
+    file_type: Option<enums::FileType>,
 
     /// Decompress flag
     #[arg(short, long)]
@@ -48,15 +50,7 @@ struct Args {
     output: String,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum FileType {
-    Zip,
-    Tar,
-    Tarbz2,
-    Targz,
-}
-
-fn get_file_type(file_path: &std::string::String) -> FileType {
+fn get_file_type(file_path: &std::string::String) -> enums::FileType {
     let output = Command::new("file")
         .arg(file_path)
         .output()
@@ -68,10 +62,10 @@ fn get_file_type(file_path: &std::string::String) -> FileType {
 
     let file_type = String::from_utf8(output.stdout).unwrap();
     match file_type {
-        s if s.contains("Zip") => FileType::Zip,
-        s if s.contains("POSIX tar archive") => FileType::Tar,
-        s if s.contains("gzip") => FileType::Targz,
-        s if s.contains("bzip2") => FileType::Tarbz2,
+        s if s.contains("Zip") => enums::FileType::Zip,
+        s if s.contains("POSIX tar archive") => enums::FileType::Tar,
+        s if s.contains("gzip") => enums::FileType::Targz,
+        s if s.contains("bzip2") => enums::FileType::Tarbz2,
         _ => panic!("no supported"),
     }
 }
@@ -167,9 +161,9 @@ where
     }
 }
 
-fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::string::String) {
+fn pack(file_type: enums::FileType, src_path: &std::string::String, dst_path: &std::string::String) {
     match file_type {
-        FileType::Zip => {
+        enums::FileType::Zip => {
             println!("Zip");
             let zip_file = File::create(dst_path).expect("zip create failed");
             let walkdir = WalkDir::new(src_path);
@@ -181,7 +175,7 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
             )
             .expect("zip compress dir failed");
         }
-        FileType::Tar => {
+        enums::FileType::Tar => {
             println!("Tar");
             let tar_file = File::create(dst_path).expect("tar create failed");
             let walkdir = WalkDir::new(src_path);
@@ -189,7 +183,7 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
             tar_dir(
                 &mut it.filter_map(|e| e.ok()), tar_file);
         }
-        FileType::Tarbz2 => {
+        enums::FileType::Tarbz2 => {
             println!("Tarbz2");
             let tar_bz2_file = File::create(dst_path).expect("tar.bz2 create failed");
             let walkdir = WalkDir::new(src_path);
@@ -197,7 +191,7 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
             tar_bz2_dir(
                 &mut it.filter_map(|e| e.ok()), tar_bz2_file);
         }
-        FileType::Targz => {
+        enums::FileType::Targz => {
             println!("Targz");
             let tar_gz_file = File::create(dst_path).expect("tar.gz create failed");
             let walkdir = WalkDir::new(src_path);
@@ -208,9 +202,9 @@ fn pack(file_type: FileType, src_path: &std::string::String, dst_path: &std::str
     }
 }
 
-fn unpack(file_type: FileType, src_path: &std::string::String, dst_path: &std::string::String) {
+fn unpack(file_type: enums::FileType, src_path: &std::string::String, dst_path: &std::string::String) {
     match file_type {
-        FileType::Zip => {
+        enums::FileType::Zip => {
             println!("Zip");
             let zip_file = File::open(src_path).expect("zip open failed");
             let mut zip_archive =
@@ -233,20 +227,20 @@ fn unpack(file_type: FileType, src_path: &std::string::String, dst_path: &std::s
                 }
             }
         }
-        FileType::Tar => {
+        enums::FileType::Tar => {
             println!("Tar");
             let tar_file = File::open(src_path).expect("tar open failed");
             let mut archive = Archive::new(tar_file);
             archive.unpack(dst_path).expect("tar unpack failed");
         }
-        FileType::Tarbz2 => {
+        enums::FileType::Tarbz2 => {
             println!("Tarbz2");
             let tar_bz2_file = File::open(src_path).expect("tar.bz2 open failed");
             let dec = BzDecoder::new(tar_bz2_file);
             let mut archive = Archive::new(dec);
             archive.unpack(dst_path).expect("tar.bz2 unpack failed");
         }
-        FileType::Targz => {
+        enums::FileType::Targz => {
             println!("Targz");
             let tar_gz_file = File::open(src_path).expect("tar.gz open failed");
             let dec = GzDecoder::new(tar_gz_file);
