@@ -9,7 +9,7 @@ use std::process::Command;
 use bzip2;
 use bzip2::read::BzDecoder;
 use bzip2::write::BzEncoder;
-use clap::{ArgGroup, Parser};
+use clap::Parser;
 use flate2;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -20,35 +20,7 @@ use zip;
 use zip::write::FileOptions;
 
 mod enums;
-
-#[derive(Parser)]
-#[command(author, version, about, long_about = None)]
-#[command(group(
-    ArgGroup::new("functional")
-        .required(true)
-        .args(["compress", "decompress"]),
-))]
-struct Args {
-    /// Compress flag
-    #[arg(short, long, requires = "file_type")]
-    compress: bool,
-
-    // file type
-    #[arg(short, value_enum)]
-    file_type: Option<enums::FileType>,
-
-    /// Decompress flag
-    #[arg(short, long)]
-    decompress: bool,
-
-    // file / directory input path
-    #[arg(short)]
-    input: String,
-
-    // file / directory output path
-    #[arg(short)]
-    output: String,
-}
+mod cli;
 
 fn get_file_type(file_path: &std::string::String) -> enums::FileType {
     let output = Command::new("file")
@@ -251,7 +223,7 @@ fn unpack(file_type: enums::FileType, src_path: &std::string::String, dst_path: 
 }
 
 fn main() {
-    let args = Args::parse();
+    let args = cli::Args::parse();
 
     println!("Input path: {:?}", args.input);
     println!("Output path: {:?}", args.output);
