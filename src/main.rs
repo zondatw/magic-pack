@@ -34,19 +34,15 @@ fn pack(
 ) {
     match file_type {
         enums::FileType::Zip => {
-            println!("Zip");
             modules::compression::zip::compress(src_path, dst_path);
         }
         enums::FileType::Tar => {
-            println!("Tar");
             modules::compression::tar::compress(src_path, dst_path);
         }
         enums::FileType::Tarbz2 => {
-            println!("Tarbz2");
             modules::compression::tar_bz2::compress(src_path, dst_path);
         }
         enums::FileType::Targz => {
-            println!("Targz");
             modules::compression::tar_gz::compress(src_path, dst_path);
         }
     }
@@ -59,19 +55,19 @@ fn unpack(
 ) {
     match file_type {
         enums::FileType::Zip => {
-            println!("Zip");
+            println!("zip");
             modules::compression::zip::decompress(src_path, dst_path);
         }
         enums::FileType::Tar => {
-            println!("Tar");
+            println!("tar");
             modules::compression::tar::decompress(src_path, dst_path);
         }
         enums::FileType::Tarbz2 => {
-            println!("Tarbz2");
+            println!("tar.bz2");
             modules::compression::tar_bz2::decompress(src_path, dst_path);
         }
         enums::FileType::Targz => {
-            println!("Targz");
+            println!("tar.gz");
             modules::compression::tar_gz::decompress(src_path, dst_path);
         }
     }
