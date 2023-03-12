@@ -19,8 +19,8 @@ use walkdir::{DirEntry, WalkDir};
 use zip;
 use zip::write::FileOptions;
 
-mod enums;
 mod cli;
+mod enums;
 
 fn get_file_type(file_path: &std::string::String) -> enums::FileType {
     let output = Command::new("file")
@@ -83,26 +83,18 @@ where
     Result::Ok(())
 }
 
-fn tar_dir<T>(
-    it: &mut dyn Iterator<Item = DirEntry>,
-    tar_file: T,
-)
+fn tar_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, tar_file: T)
 where
     T: Write + Seek,
 {
     let mut tar_builder = tar::Builder::new(tar_file);
     for entry in it {
         let path = entry.path();
-        tar_builder
-            .append_path(path)
-            .expect("tar append failed");
+        tar_builder.append_path(path).expect("tar append failed");
     }
 }
 
-fn tar_bz2_dir<T>(
-    it: &mut dyn Iterator<Item = DirEntry>,
-    tar_bz2_file: T,
-)
+fn tar_bz2_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, tar_bz2_file: T)
 where
     T: Write + Seek,
 {
@@ -116,10 +108,7 @@ where
     }
 }
 
-fn tar_gz_dir<T>(
-    it: &mut dyn Iterator<Item = DirEntry>,
-    tar_gz_file: T,
-)
+fn tar_gz_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, tar_gz_file: T)
 where
     T: Write + Seek,
 {
@@ -133,7 +122,11 @@ where
     }
 }
 
-fn pack(file_type: enums::FileType, src_path: &std::string::String, dst_path: &std::string::String) {
+fn pack(
+    file_type: enums::FileType,
+    src_path: &std::string::String,
+    dst_path: &std::string::String,
+) {
     match file_type {
         enums::FileType::Zip => {
             println!("Zip");
@@ -152,29 +145,30 @@ fn pack(file_type: enums::FileType, src_path: &std::string::String, dst_path: &s
             let tar_file = File::create(dst_path).expect("tar create failed");
             let walkdir = WalkDir::new(src_path);
             let it = walkdir.into_iter();
-            tar_dir(
-                &mut it.filter_map(|e| e.ok()), tar_file);
+            tar_dir(&mut it.filter_map(|e| e.ok()), tar_file);
         }
         enums::FileType::Tarbz2 => {
             println!("Tarbz2");
             let tar_bz2_file = File::create(dst_path).expect("tar.bz2 create failed");
             let walkdir = WalkDir::new(src_path);
             let it = walkdir.into_iter();
-            tar_bz2_dir(
-                &mut it.filter_map(|e| e.ok()), tar_bz2_file);
+            tar_bz2_dir(&mut it.filter_map(|e| e.ok()), tar_bz2_file);
         }
         enums::FileType::Targz => {
             println!("Targz");
             let tar_gz_file = File::create(dst_path).expect("tar.gz create failed");
             let walkdir = WalkDir::new(src_path);
             let it = walkdir.into_iter();
-            tar_gz_dir(
-                &mut it.filter_map(|e| e.ok()), tar_gz_file);
+            tar_gz_dir(&mut it.filter_map(|e| e.ok()), tar_gz_file);
         }
     }
 }
 
-fn unpack(file_type: enums::FileType, src_path: &std::string::String, dst_path: &std::string::String) {
+fn unpack(
+    file_type: enums::FileType,
+    src_path: &std::string::String,
+    dst_path: &std::string::String,
+) {
     match file_type {
         enums::FileType::Zip => {
             println!("Zip");

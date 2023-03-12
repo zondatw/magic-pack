@@ -1,6 +1,5 @@
-
-use clap::{ArgGroup, Parser};
 use crate::enums;
+use clap::{ArgGroup, Parser};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
