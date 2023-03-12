@@ -25,10 +25,6 @@ Install following commands:
 ./magic-pack -d -i temp/temp.tar.gz -o temp/.
 ```
 
-## Todo
-
-Current is use existed command, maybe can coding compression algorithm by self in future.
-
 ## Reference
 
 [GNU / Linux 各種壓縮與解壓縮指令](http://note.drx.tw/2008/04/command.html)  
