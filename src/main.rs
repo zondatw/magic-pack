@@ -27,52 +27,6 @@ fn get_file_type(file_path: &std::string::String) -> enums::FileType {
     }
 }
 
-fn pack(
-    file_type: enums::FileType,
-    src_path: &std::string::String,
-    dst_path: &std::string::String,
-) {
-    match file_type {
-        enums::FileType::Zip => {
-            modules::compression::zip::compress(src_path, dst_path);
-        }
-        enums::FileType::Tar => {
-            modules::compression::tar::compress(src_path, dst_path);
-        }
-        enums::FileType::Tarbz2 => {
-            modules::compression::tar_bz2::compress(src_path, dst_path);
-        }
-        enums::FileType::Targz => {
-            modules::compression::tar_gz::compress(src_path, dst_path);
-        }
-    }
-}
-
-fn unpack(
-    file_type: enums::FileType,
-    src_path: &std::string::String,
-    dst_path: &std::string::String,
-) {
-    match file_type {
-        enums::FileType::Zip => {
-            println!("zip");
-            modules::compression::zip::decompress(src_path, dst_path);
-        }
-        enums::FileType::Tar => {
-            println!("tar");
-            modules::compression::tar::decompress(src_path, dst_path);
-        }
-        enums::FileType::Tarbz2 => {
-            println!("tar.bz2");
-            modules::compression::tar_bz2::decompress(src_path, dst_path);
-        }
-        enums::FileType::Targz => {
-            println!("tar.gz");
-            modules::compression::tar_gz::decompress(src_path, dst_path);
-        }
-    }
-}
-
 fn main() {
     let args = Args::new();
 
@@ -81,11 +35,11 @@ fn main() {
 
     if args.compress {
         println!("Compress");
-        pack(args.file_type.unwrap(), &args.input, &args.output);
+        modules::compress(args.file_type.unwrap(), &args.input, &args.output);
     }
     if args.decompress {
         println!("Decompress");
         let file_type = get_file_type(&args.input);
-        unpack(file_type, &args.input, &args.output);
+        modules::decompress(file_type, &args.input, &args.output);
     }
 }
