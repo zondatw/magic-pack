@@ -31,3 +31,9 @@ pub struct Args {
     #[arg(short)]
     pub output: String,
 }
+
+impl Args {
+    pub fn new() -> Self {
+        Args::parse()
+    }
+}

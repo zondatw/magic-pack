@@ -12,7 +12,6 @@ use std::process::Command;
 use bzip2;
 use bzip2::read::BzDecoder;
 use bzip2::write::BzEncoder;
-use clap::Parser;
 use flate2;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -22,6 +21,7 @@ use walkdir::{DirEntry, WalkDir};
 use zip;
 use zip::write::FileOptions;
 
+use crate::cli::Args;
 use crate::contents::enums;
 
 fn get_file_type(file_path: &std::string::String) -> enums::FileType {
@@ -219,7 +219,7 @@ fn unpack(
 }
 
 fn main() {
-    let args = cli::Args::parse();
+    let args = Args::new();
 
     println!("Input path: {:?}", args.input);
     println!("Output path: {:?}", args.output);
