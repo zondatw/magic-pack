@@ -1,6 +1,6 @@
 [package]
 name = "magic-pack"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Zonda Yang <u226699@gmail.com>"]
 description = "Magic pack tool"
 homepage = "https://github.com/zondatw/magic-pack"
