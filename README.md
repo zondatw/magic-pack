@@ -9,20 +9,20 @@ Install following commands:
 
 ```shell
 // zip
-./magic-pack -c -f zip -i src -o temp/temp.zip
-./magic-pack -d -i temp/temp.zip -o temp/.
+./magic-pack -c -f zip -o temp/temp.zip src
+./magic-pack -d -o temp/. temp/temp.zip
 
 // tar
-./magic-pack -c -f tar -i src -o temp/temp.tar
-./magic-pack -d -i temp/temp.tar -o temp/.
+./magic-pack -c -f tar -o temp/temp.tar src
+./magic-pack -d -o temp/. temp/temp.tar
 
 // tar.bz2
-./magic-pack -c -f tarbz2 -i src -o temp/temp.tar.bz2
-./magic-pack -d -i temp/temp.tar.bz2 -o temp/.
+./magic-pack -c -f tarbz2 -o temp/temp.tar.bz2 src
+./magic-pack -d -o temp/. temp/temp.tar.bz2
  
 // tar.gz
-./magic-pack -c -f targz -i src -o temp/temp.tar.gz
-./magic-pack -d -i temp/temp.tar.gz -o temp/.
+./magic-pack -c -f targz -o temp/temp.tar.gz src
+./magic-pack -d -o temp/. temp/temp.tar.gz
 ```
 
 ## Reference
