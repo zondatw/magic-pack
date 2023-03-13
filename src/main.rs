@@ -27,7 +27,7 @@ fn main() {
     }
     if args.decompress {
         println!("Decompress");
-        let file_type = modules::get_file_type(&args.input);
+        let file_type = modules::get_file_type(&args.input.to_owned().into_os_string().into_string().unwrap());
         if args.output == path::Path::new(".") {
             modules::decompress(file_type, &args.input, &temp_output);
         } else {

@@ -25,7 +25,7 @@ pub struct Args {
     pub decompress: bool,
 
     // file / directory input path
-    pub input: String,
+    pub input: path::PathBuf,
 
     // file / directory output path
     #[arg(short, default_value = ".")]
