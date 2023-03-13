@@ -1,4 +1,5 @@
 use clap::{ArgGroup, Parser};
+use std::path;
 
 use crate::contents::enums;
 
@@ -24,12 +25,11 @@ pub struct Args {
     pub decompress: bool,
 
     // file / directory input path
-    #[arg(short)]
     pub input: String,
 
     // file / directory output path
-    #[arg(short)]
-    pub output: String,
+    #[arg(short, default_value = ".")]
+    pub output: path::PathBuf,
 }
 
 impl Args {
