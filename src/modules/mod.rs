@@ -18,6 +18,7 @@ pub fn get_file_type(file_path: &std::string::String) -> enums::FileType {
     match file_type {
         s if s.contains("Zip") => enums::FileType::Zip,
         s if s.contains("POSIX tar archive") => enums::FileType::Tar,
+        s if s.contains("gzip") => enums::FileType::Gz,
         s if s.contains("bzip2") => enums::FileType::Bz2,
         _ => panic!("no supported"),
     }
@@ -39,6 +40,9 @@ pub fn compress(
         }
         enums::FileType::Bz2 => {
             compression::bz2::compress(&src_path_str, &dst_path_str);
+        }
+        enums::FileType::Gz => {
+            compression::gz::compress(&src_path_str, &dst_path_str);
         }
         enums::FileType::Tarbz2 => {
             compression::tar_bz2::compress(&src_path_str, &dst_path_str);
@@ -76,6 +80,10 @@ pub fn decompress(
         enums::FileType::Bz2 => {
             println!("bz2");
             compression::bz2::decompress(&src_path_str, &dst_path_str);
+        }
+        enums::FileType::Gz => {
+            println!("gz");
+            compression::gz::decompress(&src_path_str, &dst_path_str);
         }
     }
 }
