@@ -4,6 +4,7 @@ use clap::ValueEnum;
 pub enum FileType {
     Zip,
     Tar,
+    Bz2,
     Tarbz2,
     Targz,
 }
@@ -12,6 +13,7 @@ pub fn get_file_type_string(file_type: FileType) -> &'static str {
     match file_type {
         FileType::Zip => "zip",
         FileType::Tar => "tar",
+        FileType::Bz2 => "bz2",
         FileType::Tarbz2 => "tar.bz2",
         FileType::Targz => "tar.gz",
     }
