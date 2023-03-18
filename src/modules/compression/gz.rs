@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{Write, Read};
+use std::io::{Read, Write};
 
 use flate2;
 use flate2::read::GzDecoder;
@@ -23,5 +23,7 @@ pub fn decompress(src_path: &std::string::String, dst_path: &std::string::String
     let mut content = Vec::new();
     reader.read_to_end(&mut content).expect("gz unpack failed");
     let mut dst_file = File::create(dst_path).expect("gz unpack failed");
-    dst_file.write_all(content.as_slice()).expect("gz unpack failed");
+    dst_file
+        .write_all(content.as_slice())
+        .expect("gz unpack failed");
 }

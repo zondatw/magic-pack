@@ -6,7 +6,7 @@ use std::path;
 
 use crate::cli::Args;
 use crate::contents::enums;
-use std::io::{ErrorKind};
+use std::io::ErrorKind;
 
 fn main() {
     let args = Args::new();
@@ -34,7 +34,13 @@ fn main() {
             decompress_output = temp_output;
         }
         for index in 0..2 {
-            let file_type = match modules::get_file_type(&decompress_input.to_owned().into_os_string().into_string().unwrap()) {
+            let file_type = match modules::get_file_type(
+                &decompress_input
+                    .to_owned()
+                    .into_os_string()
+                    .into_string()
+                    .unwrap(),
+            ) {
                 Ok(file_type) => file_type,
                 Err(e) if e.kind() == ErrorKind::Unsupported && index != 0 => break,
                 Err(e) => panic!("{}", e),

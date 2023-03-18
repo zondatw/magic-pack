@@ -1,7 +1,7 @@
 mod compression;
 
-use std::process::Command;
 use std::io::{Error, ErrorKind};
+use std::process::Command;
 
 use crate::enums;
 
