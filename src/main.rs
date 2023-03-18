@@ -27,11 +27,13 @@ fn main() {
     }
     if args.decompress {
         println!("Decompress");
-        let file_type = modules::get_file_type(&args.input.to_owned().into_os_string().into_string().unwrap());
-        if args.output == path::Path::new(".") {
-            modules::decompress(file_type, &args.input, &temp_output);
-        } else {
-            modules::decompress(file_type, &args.input, &args.output);
+        let mut decompress_output = args.output;
+        let mut decompress_input = args.input;
+        let file_type = modules::get_file_type(&decompress_input.to_owned().into_os_string().into_string().unwrap());
+        if decompress_output == path::Path::new(".") {
+            decompress_output = temp_output;
         }
+        println!("Decompress output: {:?}", decompress_output.to_owned());
+        modules::decompress(file_type, &decompress_input, &decompress_output);
     }
 }
