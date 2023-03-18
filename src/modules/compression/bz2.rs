@@ -23,5 +23,5 @@ pub fn decompress(src_path: &std::string::String, dst_path: &std::string::String
     let mut content = Vec::new();
     reader.read_to_end(&mut content).expect("bz2 unpack failed");
     let mut dst_file = File::create(dst_path).expect("bz2 unpack failed");
-    dst_file.write_all(content.as_slice());
+    dst_file.write_all(content.as_slice()).expect("bz2 unpack failed");
 }
