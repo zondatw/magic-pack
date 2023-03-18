@@ -1,10 +1,11 @@
 mod compression;
 
 use std::process::Command;
+use std::io::{Error, ErrorKind};
 
 use crate::enums;
 
-pub fn get_file_type(file_path: &std::string::String) -> enums::FileType {
+pub fn get_file_type(file_path: &std::string::String) -> Result<enums::FileType, std::io::Error> {
     let output = Command::new("file")
         .arg(file_path)
         .output()
@@ -16,11 +17,11 @@ pub fn get_file_type(file_path: &std::string::String) -> enums::FileType {
 
     let file_type = String::from_utf8(output.stdout).unwrap();
     match file_type {
-        s if s.contains("Zip") => enums::FileType::Zip,
-        s if s.contains("POSIX tar archive") => enums::FileType::Tar,
-        s if s.contains("gzip") => enums::FileType::Gz,
-        s if s.contains("bzip2") => enums::FileType::Bz2,
-        _ => panic!("no supported"),
+        s if s.contains("Zip") => Ok(enums::FileType::Zip),
+        s if s.contains("POSIX tar archive") => Ok(enums::FileType::Tar),
+        s if s.contains("gzip") => Ok(enums::FileType::Gz),
+        s if s.contains("bzip2") => Ok(enums::FileType::Bz2),
+        _ => Err(Error::from(ErrorKind::Unsupported)),
     }
 }
 
