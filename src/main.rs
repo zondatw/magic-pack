@@ -9,6 +9,24 @@ use std::path;
 use crate::cli::Args;
 use crate::contents::enums;
 
+fn compress(
+    file_type: &enums::FileType,
+    src_path: &std::path::PathBuf,
+    dst_path: &std::path::PathBuf,
+) {
+    println!("Compress");
+
+    let filename = path::Path::new(&src_path).file_stem().unwrap();
+    let mut temp_output = dst_path.join(filename);
+
+    temp_output.set_extension(enums::get_file_type_string(file_type.to_owned()));
+    if dst_path == path::Path::new(".") {
+        modules::compress(file_type.to_owned(), &src_path, &temp_output);
+    } else {
+        modules::compress(file_type.to_owned(), &src_path, &dst_path);
+    }
+}
+
 fn main() {
     let args = Args::new();
 
@@ -16,16 +34,10 @@ fn main() {
     println!("Output path: {:?}", args.output);
 
     let filename = path::Path::new(&args.input).file_stem().unwrap();
-    let mut temp_output = args.output.join(filename);
+    let temp_output = args.output.join(filename);
 
     if args.compress {
-        println!("Compress");
-        temp_output.set_extension(enums::get_file_type_string(args.file_type.unwrap()));
-        if args.output == path::Path::new(".") {
-            modules::compress(args.file_type.unwrap(), &args.input, &temp_output);
-        } else {
-            modules::compress(args.file_type.unwrap(), &args.input, &args.output);
-        }
+        compress(&args.file_type.unwrap(), &args.input, &args.output);
     }
     if args.decompress {
         println!("Decompress");
