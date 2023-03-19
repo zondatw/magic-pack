@@ -1,5 +1,11 @@
 # Magic pack
 
+## Quick install
+
+```shell
+cargo install
+```
+
 ## Prerequisites
 
 Install following commands:
