@@ -3,7 +3,7 @@
 ## Quick install
 
 ```shell
-cargo install
+cargo install magic-pack
 ```
 
 ## Prerequisites
