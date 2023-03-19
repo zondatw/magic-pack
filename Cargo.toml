@@ -5,8 +5,10 @@ authors = ["Zonda Yang <u226699@gmail.com>"]
 description = "Magic pack tool"
 homepage = "https://github.com/zondatw/magic-pack"
 repository = "https://github.com/zondatw/magic-pack"
+keywords = ["compress", "decompress"]
 edition = "2021"
 license = "MIT"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,3 +19,7 @@ tar = "0.4.38"
 bzip2 = "0.4.4"
 zip = "0.6.4"
 walkdir = "2"
+
+[[bin]]
+name = "magic-pack"
+path = "src/main.rs"
