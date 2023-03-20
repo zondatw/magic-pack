@@ -28,9 +28,9 @@ fn compress(
 }
 
 fn decompress(src_path: &std::path::PathBuf, dst_path: &std::path::PathBuf) {
+    println!("Decompress");
     let filename = path::Path::new(src_path).file_stem().unwrap();
     let temp_output = dst_path.join(filename);
-    println!("Decompress");
     if dst_path != path::Path::new(".") {
         fs::create_dir_all(&dst_path).expect("Create dir failed");
     }
@@ -66,9 +66,8 @@ fn decompress(src_path: &std::path::PathBuf, dst_path: &std::path::PathBuf) {
         };
         println!("Decompress output: {:?}", decompress_output.to_owned());
         modules::decompress(file_type, &decompress_input, &decompress_output);
-        decompress_input = decompress_output;
+        decompress_input = path::PathBuf::from(&decompress_output);
         let temp_filename = path::Path::new(&decompress_input).file_stem().unwrap();
-        decompress_output = path::PathBuf::from(&decompress_input);
         decompress_output.set_file_name(temp_filename);
     }
 }
