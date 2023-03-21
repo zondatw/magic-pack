@@ -29,12 +29,11 @@ fn compress(
 
 fn decompress(src_path: &std::path::PathBuf, dst_path: &std::path::PathBuf) {
     println!("Decompress");
-    let filename = path::Path::new(src_path).file_stem().unwrap();
-    let temp_output = dst_path.join(filename);
     if dst_path != path::Path::new(".") {
         fs::create_dir_all(&dst_path).expect("Create dir failed");
     }
-    let mut decompress_output = temp_output;
+    let src_filename = path::Path::new(src_path).file_stem().unwrap();
+    let mut decompress_output = dst_path.join(src_filename);
     let mut decompress_input = src_path.to_owned();
     let _filename = path::Path::new(&decompress_output).file_name().unwrap();
     let mg_filename = format!("{}{}", "mg_", _filename.to_str().unwrap());
