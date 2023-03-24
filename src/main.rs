@@ -40,13 +40,7 @@ fn decompress(src_path: &std::path::PathBuf, dst_path: &std::path::PathBuf) {
     decompress_output.set_file_name(mg_filename);
 
     for index in 0..5 {
-        let file_type = match modules::get_file_type(
-            &decompress_input
-                .to_owned()
-                .into_os_string()
-                .into_string()
-                .unwrap(),
-        ) {
+        let file_type = match modules::get_file_type(&decompress_input) {
             Ok(file_type) => file_type,
             Err(e) if e.kind() == ErrorKind::Unsupported && index != 0 => {
                 let final_filename = decompress_input

@@ -1,28 +1,45 @@
 mod compression;
 
-use std::io::{Error, ErrorKind};
-use std::process::Command;
+use std::fs::File;
+use std::io::{Error, ErrorKind, Read};
 
 use crate::enums;
 
-pub fn get_file_type(file_path: &std::string::String) -> Result<enums::FileType, std::io::Error> {
-    let output = Command::new("file")
-        .arg(file_path)
-        .output()
-        .expect("file command failed");
-
-    if !output.status.success() {
-        panic!("file command failed");
+pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, std::io::Error> {
+    struct CompressMagic {
+        magic_number: &'static [u8],
+        length: usize,
+        file_type: enums::FileType,
     }
 
-    let file_type = String::from_utf8(output.stdout).unwrap();
-    match file_type {
-        s if s.contains("Zip") => Ok(enums::FileType::Zip),
-        s if s.contains("POSIX tar archive") => Ok(enums::FileType::Tar),
-        s if s.contains("gzip") => Ok(enums::FileType::Gz),
-        s if s.contains("bzip2") => Ok(enums::FileType::Bz2),
-        _ => Err(Error::from(ErrorKind::Unsupported)),
+    static COMPRESS_MAGIC_LIST: [CompressMagic; 3] = [
+        CompressMagic {
+            magic_number: b"BZh",
+            length: 3,
+            file_type: enums::FileType::Bz2,
+        },
+        CompressMagic {
+            magic_number: &[0x1f, 0x8b],
+            length: 2,
+            file_type: enums::FileType::Gz,
+        },
+        CompressMagic {
+            magic_number: &[0x50, 0x4b, 0x03, 0x04],
+            length: 4,
+            file_type: enums::FileType::Zip,
+        },
+    ];
+
+    let mut buffer = [0u8; 4];
+    let mut file = File::open(file_path).expect("file open failed");
+    file.read_exact(&mut buffer).expect("read file failed");
+
+    for compress_magic in COMPRESS_MAGIC_LIST.iter() {
+        if buffer.get(..compress_magic.length).unwrap() == compress_magic.magic_number {
+            return Ok(compress_magic.file_type);
+        }
     }
+    Err(Error::from(ErrorKind::Unsupported))
 }
 
 pub fn compress(
