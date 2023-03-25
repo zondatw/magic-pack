@@ -1,9 +1,13 @@
 mod compression;
 
 use std::fs::File;
-use std::io::{Error, ErrorKind, Read};
+use std::io::{Error, ErrorKind, Read, Seek};
 
 use crate::enums;
+
+fn find_subsequence(source: &[u8], target: &[u8]) -> Option<usize> {
+    source.windows(target.len()).position(|window| window == target)
+}
 
 pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, std::io::Error> {
     struct CompressMagic {
@@ -12,7 +16,7 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
         file_type: enums::FileType,
     }
 
-    static COMPRESS_MAGIC_LIST: [CompressMagic; 3] = [
+    static COMPRESS_MAGIC_STARTSWITH_LIST: [CompressMagic; 3] = [
         CompressMagic {
             magic_number: b"BZh",
             length: 3,
@@ -30,15 +34,34 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
         },
     ];
 
-    let mut buffer = [0u8; 4];
-    let mut file = File::open(file_path).expect("file open failed");
-    file.read_exact(&mut buffer).expect("read file failed");
+    static COMPRESS_MAGIC_INCLUDE_LIST: [CompressMagic; 1] = [
+        CompressMagic {
+            magic_number: &[0x75, 0x73, 0x74, 0x61, 0x72],
+            length: 5,
+            file_type: enums::FileType::Tar,
+        },
+    ];
 
-    for compress_magic in COMPRESS_MAGIC_LIST.iter() {
-        if buffer.get(..compress_magic.length).unwrap() == compress_magic.magic_number {
+    let mut startswith_buffer = [0u8; 4];
+    let mut file = File::open(file_path).expect("file open failed");
+    file.read_exact(&mut startswith_buffer).expect("read file failed");
+
+    for compress_magic in COMPRESS_MAGIC_STARTSWITH_LIST.iter() {
+        if startswith_buffer.get(..compress_magic.length).unwrap() == compress_magic.magic_number {
             return Ok(compress_magic.file_type);
         }
     }
+
+    file.rewind().expect("Seek 0 failed");
+    let mut include_vec = Vec::new();
+    file.read_to_end(&mut include_vec);
+
+    for compress_magic in COMPRESS_MAGIC_INCLUDE_LIST.iter() {
+        if find_subsequence(&include_vec, compress_magic.magic_number) != None {
+            return Ok(compress_magic.file_type);
+        }
+    }
+
     Err(Error::from(ErrorKind::Unsupported))
 }
 
