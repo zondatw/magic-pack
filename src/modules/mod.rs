@@ -16,7 +16,7 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
         file_type: enums::FileType,
     }
 
-    static COMPRESS_MAGIC_STARTSWITH_LIST: [CompressMagic; 3] = [
+    let compress_magic_startswith_list = [
         CompressMagic {
             magic_number: b"BZh",
             length: 3,
@@ -34,7 +34,7 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
         },
     ];
 
-    static COMPRESS_MAGIC_INCLUDE_LIST: [CompressMagic; 1] = [
+    let compress_magic_include_list = [
         CompressMagic {
             magic_number: &[0x75, 0x73, 0x74, 0x61, 0x72],
             length: 5,
@@ -46,7 +46,7 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
     let mut file = File::open(file_path).expect("file open failed");
     file.read_exact(&mut startswith_buffer).expect("read file failed");
 
-    for compress_magic in COMPRESS_MAGIC_STARTSWITH_LIST.iter() {
+    for compress_magic in compress_magic_startswith_list.iter() {
         if startswith_buffer.get(..compress_magic.length).unwrap() == compress_magic.magic_number {
             return Ok(compress_magic.file_type);
         }
@@ -56,7 +56,7 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
     let mut include_vec = Vec::new();
     file.read_to_end(&mut include_vec);
 
-    for compress_magic in COMPRESS_MAGIC_INCLUDE_LIST.iter() {
+    for compress_magic in compress_magic_include_list.iter() {
         if find_subsequence(&include_vec, compress_magic.magic_number) != None {
             return Ok(compress_magic.file_type);
         }
