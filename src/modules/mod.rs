@@ -43,8 +43,8 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
     ];
 
     let mut startswith_buffer = [0u8; 4];
-    let mut file = File::open(file_path).expect("file open failed");
-    file.read_exact(&mut startswith_buffer).expect("read file failed");
+    let mut file = File::open(file_path).expect("File open failed");
+    file.read_exact(&mut startswith_buffer).expect("Read file failed");
 
     for compress_magic in compress_magic_startswith_list.iter() {
         if startswith_buffer.get(..compress_magic.length).unwrap() == compress_magic.magic_number {
@@ -54,7 +54,7 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
 
     file.rewind().expect("Seek 0 failed");
     let mut include_vec = Vec::new();
-    file.read_to_end(&mut include_vec);
+    file.read_to_end(&mut include_vec).expect("Read file failed");
 
     for compress_magic in compress_magic_include_list.iter() {
         if find_subsequence(&include_vec, compress_magic.magic_number) != None {
