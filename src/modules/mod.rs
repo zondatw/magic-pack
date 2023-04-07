@@ -6,7 +6,9 @@ use std::io::{Error, ErrorKind, Read, Seek};
 use crate::enums;
 
 fn find_subsequence(source: &[u8], target: &[u8]) -> Option<usize> {
-    source.windows(target.len()).position(|window| window == target)
+    source
+        .windows(target.len())
+        .position(|window| window == target)
 }
 
 pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, std::io::Error> {
@@ -34,17 +36,16 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
         },
     ];
 
-    let compress_magic_include_list = [
-        CompressMagic {
-            magic_number: &[0x75, 0x73, 0x74, 0x61, 0x72],
-            length: 5,
-            file_type: enums::FileType::Tar,
-        },
-    ];
+    let compress_magic_include_list = [CompressMagic {
+        magic_number: &[0x75, 0x73, 0x74, 0x61, 0x72],
+        length: 5,
+        file_type: enums::FileType::Tar,
+    }];
 
     let mut startswith_buffer = [0u8; 4];
     let mut file = File::open(file_path).expect("File open failed");
-    file.read_exact(&mut startswith_buffer).expect("Read file failed");
+    file.read_exact(&mut startswith_buffer)
+        .expect("Read file failed");
 
     for compress_magic in compress_magic_startswith_list.iter() {
         if startswith_buffer.get(..compress_magic.length).unwrap() == compress_magic.magic_number {
@@ -54,7 +55,8 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
 
     file.rewind().expect("Seek 0 failed");
     let mut include_vec = Vec::new();
-    file.read_to_end(&mut include_vec).expect("Read file failed");
+    file.read_to_end(&mut include_vec)
+        .expect("Read file failed");
 
     for compress_magic in compress_magic_include_list.iter() {
         if find_subsequence(&include_vec, compress_magic.magic_number) != None {
