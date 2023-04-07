@@ -26,11 +26,17 @@ mod test_get_file_type_string {
 
     #[test]
     fn tarbz2() {
-        assert_eq!("tar.bz2", enums::get_file_type_string(enums::FileType::Tarbz2));
+        assert_eq!(
+            "tar.bz2",
+            enums::get_file_type_string(enums::FileType::Tarbz2)
+        );
     }
 
     #[test]
     fn targz() {
-        assert_eq!("tar.gz", enums::get_file_type_string(enums::FileType::Targz));
+        assert_eq!(
+            "tar.gz",
+            enums::get_file_type_string(enums::FileType::Targz)
+        );
     }
 }
