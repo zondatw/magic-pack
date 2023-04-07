@@ -71,15 +71,15 @@ pub fn decompress(src_path: &std::string::String, dst_path: &std::string::String
         let mut file = zip_archive.by_index(i).expect("zip index not exist");
         let outpath = &PathBuf::from(dst_path).join(file.mangled_name());
 
-        if (&*file.name()).ends_with('/') {
-            fs::create_dir_all(&outpath).expect("zip create dir all failed");
+        if (file.name()).ends_with('/') {
+            fs::create_dir_all(outpath).expect("zip create dir all failed");
         } else {
             if let Some(p) = outpath.parent() {
                 if !p.exists() {
-                    fs::create_dir_all(&p).expect("zip create dir all failed");
+                    fs::create_dir_all(p).expect("zip create dir all failed");
                 }
             }
-            let mut outfile = fs::File::create(&outpath).expect("zip create file failed");
+            let mut outfile = fs::File::create(outpath).expect("zip create file failed");
             io::copy(&mut file, &mut outfile).expect("zip file copy failed");
         }
     }

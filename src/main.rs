@@ -21,16 +21,16 @@ fn compress(
 
     temp_output.set_extension(enums::get_file_type_string(file_type.to_owned()));
     if dst_path == path::Path::new(".") {
-        modules::compress(file_type.to_owned(), &src_path, &temp_output);
+        modules::compress(file_type.to_owned(), src_path, &temp_output);
     } else {
-        modules::compress(file_type.to_owned(), &src_path, &dst_path);
+        modules::compress(file_type.to_owned(), src_path, dst_path);
     }
 }
 
 fn decompress(src_path: &std::path::PathBuf, dst_path: &std::path::PathBuf) {
     println!("Decompress");
     if dst_path != path::Path::new(".") {
-        fs::create_dir_all(&dst_path).expect("Create dir failed");
+        fs::create_dir_all(dst_path).expect("Create dir failed");
     }
     let src_filename = path::Path::new(src_path).file_stem().unwrap();
     let mut decompress_output = dst_path.join(src_filename);

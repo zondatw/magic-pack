@@ -61,7 +61,7 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
         .expect("Read file failed");
 
     for compress_magic in compress_magic_include_list.iter() {
-        if find_subsequence(&include_vec, compress_magic.magic_number) != None {
+        if find_subsequence(&include_vec, compress_magic.magic_number).is_some() {
             return Ok(compress_magic.file_type);
         }
     }
