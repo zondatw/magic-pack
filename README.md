@@ -11,6 +11,7 @@ cargo install magic-pack
 ```shell
 just all
 just all-release
+just quality
 ```
 
 ## Command
