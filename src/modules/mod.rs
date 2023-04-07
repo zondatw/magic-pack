@@ -44,8 +44,10 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
 
     let mut startswith_buffer = [0u8; 4];
     let mut file = File::open(file_path).expect("File open failed");
-    file.read_exact(&mut startswith_buffer)
-        .expect("Read file failed");
+    match file.read_exact(&mut startswith_buffer) {
+        Ok(_) => (),
+        Err(_) => return Err(Error::from(ErrorKind::Unsupported)),
+    };
 
     for compress_magic in compress_magic_startswith_list.iter() {
         if startswith_buffer.get(..compress_magic.length).unwrap() == compress_magic.magic_number {
