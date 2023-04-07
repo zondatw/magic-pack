@@ -36,6 +36,6 @@ just quality
 
 ## Reference
 
-[GNU / Linux 各種壓縮與解壓縮指令](http://note.drx.tw/2008/04/command.html)
-[File Magic Numbers](https://gist.github.com/leommoore/f9e57ba2aa4bf197ebc5)
-[File](https://github.com/file/file/blob/master/src/compress.c)
+[GNU / Linux 各種壓縮與解壓縮指令](http://note.drx.tw/2008/04/command.html)  
+[File Magic Numbers](https://gist.github.com/leommoore/f9e57ba2aa4bf197ebc5)  
+[File](https://github.com/file/file/blob/master/src/compress.c)  
