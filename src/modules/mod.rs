@@ -3,7 +3,7 @@ mod compression;
 use std::fs::File;
 use std::io::{Error, ErrorKind, Read, Seek};
 
-use crate::enums;
+use crate::contents::enums;
 
 fn find_subsequence(source: &[u8], target: &[u8]) -> Option<usize> {
     source

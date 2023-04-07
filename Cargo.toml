@@ -20,6 +20,10 @@ bzip2 = "0.4.4"
 zip = "0.6.4"
 walkdir = "2"
 
+[lib]
+name = "magic_pack"
+path = "src/lib.rs"
+
 [[bin]]
 name = "magic-pack"
 path = "src/main.rs"
