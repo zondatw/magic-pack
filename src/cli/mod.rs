@@ -12,7 +12,7 @@ use crate::contents::enums;
 ))]
 
 pub struct Args {
-    /// Compress flag
+    // Compress flag
     #[arg(short, long, requires = "file_type")]
     pub compress: bool,
 
@@ -20,9 +20,13 @@ pub struct Args {
     #[arg(short, value_enum)]
     pub file_type: Option<enums::FileType>,
 
-    /// Decompress flag
+    // Decompress flag
     #[arg(short, long)]
     pub decompress: bool,
+
+    // decompress level
+    #[arg(short, long, default_value = "5")]
+    pub level: i8,
 
     // file / directory input path
     pub input: path::PathBuf,

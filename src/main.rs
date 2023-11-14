@@ -27,7 +27,7 @@ fn compress(
     }
 }
 
-fn decompress(src_path: &std::path::PathBuf, dst_path: &std::path::PathBuf) {
+fn decompress(src_path: &std::path::PathBuf, dst_path: &std::path::PathBuf, level: i8) {
     println!("Decompress");
     if dst_path != path::Path::new(".") {
         fs::create_dir_all(dst_path).expect("Create dir failed");
@@ -39,20 +39,10 @@ fn decompress(src_path: &std::path::PathBuf, dst_path: &std::path::PathBuf) {
     let mg_filename = format!("{}{}", "mg_", _filename.to_str().unwrap());
     decompress_output.set_file_name(mg_filename);
 
-    for index in 0..5 {
+    for index in 0..level {
         let file_type = match modules::get_file_type(&decompress_input) {
             Ok(file_type) => file_type,
             Err(e) if e.kind() == ErrorKind::Unsupported && index != 0 => {
-                let final_filename = decompress_input
-                    .file_name()
-                    .unwrap()
-                    .to_os_string()
-                    .into_string()
-                    .unwrap()
-                    .replace("mg_", "");
-                let mut decompress_final_output = path::PathBuf::from(&decompress_input);
-                decompress_final_output.set_file_name(final_filename);
-                fs::rename(decompress_input, decompress_final_output).expect("Rename failed");
                 break;
             }
             Err(e) => panic!("{}", e),
@@ -63,6 +53,16 @@ fn decompress(src_path: &std::path::PathBuf, dst_path: &std::path::PathBuf) {
         let temp_filename = path::Path::new(&decompress_input).file_stem().unwrap();
         decompress_output.set_file_name(temp_filename);
     }
+    let final_filename = decompress_input
+        .file_name()
+        .unwrap()
+        .to_os_string()
+        .into_string()
+        .unwrap()
+        .replace("mg_", "");
+    let mut decompress_final_output = path::PathBuf::from(&decompress_input);
+    decompress_final_output.set_file_name(final_filename);
+    fs::rename(decompress_input, decompress_final_output).expect("Rename failed");
 }
 
 fn main() {
@@ -75,6 +75,6 @@ fn main() {
         compress(&args.file_type.unwrap(), &args.input, &args.output);
     }
     if args.decompress {
-        decompress(&args.input, &args.output);
+        decompress(&args.input, &args.output, args.level);
     }
 }
