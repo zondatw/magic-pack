@@ -1,13 +1,12 @@
 mod cli;
-mod contents;
-mod modules;
 
 use std::fs;
 use std::io::ErrorKind;
 use std::path;
 
 use crate::cli::Args;
-use crate::contents::enums;
+use magic_pack::contents::enums;
+use magic_pack::modules;
 
 fn compress(
     file_type: &enums::FileType,

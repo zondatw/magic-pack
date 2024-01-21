@@ -1,7 +1,7 @@
 use clap::{ArgGroup, Parser};
 use std::path;
 
-use crate::contents::enums;
+use magic_pack::contents::enums;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
