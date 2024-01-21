@@ -1,5 +1,7 @@
 # Magic pack
 
+This the pack tool, it's provides user can easy to compress and decompress without remember a lot of commands.
+
 ## Quick install
 
 ```shell
@@ -15,6 +17,28 @@ just quality
 ```
 
 ## Command
+
+### Uages
+
+```shell
+Magic pack tool
+
+Usage: magic-pack [OPTIONS] <--compress|--decompress> <INPUT>
+
+Arguments:
+  <INPUT>
+
+Options:
+  -c, --compress
+  -f <FILE_TYPE>       [possible values: zip, tar, bz2, gz, tarbz2, targz]
+  -d, --decompress
+  -l, --level <LEVEL>  [default: 5]
+  -o <OUTPUT>          [default: .]
+  -h, --help           Print help information
+  -V, --version        Print version information
+```
+
+### Example
 
 ```shell
 // zip
