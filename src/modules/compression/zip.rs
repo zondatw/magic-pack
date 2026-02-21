@@ -27,10 +27,7 @@ where
         let path = entry.path();
 
         if path.is_file() {
-            zip.start_file(
-                path.to_owned().into_os_string().into_string().unwrap(),
-                options,
-            )
+            zip.start_file(path.to_string_lossy().into_owned(), options)
             .expect("zip start file from path failed");
             let mut f = File::open(path).expect("zip open compressing-file failed");
 
@@ -39,10 +36,7 @@ where
             zip.write_all(&buffer).expect("zip compress file failed");
             buffer.clear();
         } else if !path.as_os_str().is_empty() {
-            zip.add_directory(
-                path.to_owned().into_os_string().into_string().unwrap(),
-                options,
-            )
+            zip.add_directory(path.to_string_lossy().into_owned(), options)
             .expect("zip add dir from path failed");
         }
     }
@@ -50,7 +44,7 @@ where
     Result::Ok(())
 }
 
-pub fn compress(src_path: &std::string::String, dst_path: &std::string::String) {
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
     let zip_file = File::create(dst_path).expect("zip create failed");
     let walkdir = WalkDir::new(src_path);
     let it = walkdir.into_iter();
@@ -62,7 +56,7 @@ pub fn compress(src_path: &std::string::String, dst_path: &std::string::String) 
     .expect("zip compress dir failed");
 }
 
-pub fn decompress(src_path: &std::string::String, dst_path: &std::string::String) {
+pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
     let zip_file = File::open(src_path).expect("zip open failed");
     let mut zip_archive =
         zip::ZipArchive::new(BufReader::new(zip_file)).expect("zip open to archive failed");

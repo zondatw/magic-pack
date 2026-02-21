@@ -22,14 +22,14 @@ where
     }
 }
 
-pub fn compress(src_path: &std::string::String, dst_path: &std::string::String) {
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
     let tar_gz_file = File::create(dst_path).expect("tar.gz create failed");
     let walkdir = WalkDir::new(src_path);
     let it = walkdir.into_iter();
     tar_gz_dir(&mut it.filter_map(|e| e.ok()), tar_gz_file);
 }
 
-pub fn decompress(src_path: &std::string::String, dst_path: &std::string::String) {
+pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
     let tar_gz_file = File::open(src_path).expect("tar.gz open failed");
     let dec = GzDecoder::new(tar_gz_file);
     let mut archive = Archive::new(dec);

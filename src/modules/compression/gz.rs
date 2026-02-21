@@ -5,7 +5,7 @@ use flate2;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 
-pub fn compress(src_path: &std::string::String, dst_path: &std::string::String) {
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
     let gz_file = File::create(dst_path).expect("gz create failed");
     let mut enc = GzEncoder::new(gz_file, flate2::Compression::default());
 
@@ -16,7 +16,7 @@ pub fn compress(src_path: &std::string::String, dst_path: &std::string::String) 
     enc.finish().expect("gz open failed");
 }
 
-pub fn decompress(src_path: &std::string::String, dst_path: &std::string::String) {
+pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
     let gz_file = File::open(src_path).expect("gz open failed");
     let dec = GzDecoder::new(gz_file);
     let mut reader = std::io::BufReader::new(dec);

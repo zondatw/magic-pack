@@ -74,26 +74,24 @@ pub fn compress(
     src_path: &std::path::PathBuf,
     dst_path: &std::path::PathBuf,
 ) {
-    let src_path_str = src_path.to_owned().into_os_string().into_string().unwrap();
-    let dst_path_str = dst_path.to_owned().into_os_string().into_string().unwrap();
     match file_type {
         enums::FileType::Zip => {
-            compression::zip::compress(&src_path_str, &dst_path_str);
+            compression::zip::compress(src_path, dst_path);
         }
         enums::FileType::Tar => {
-            compression::tar::compress(&src_path_str, &dst_path_str);
+            compression::tar::compress(src_path, dst_path);
         }
         enums::FileType::Bz2 => {
-            compression::bz2::compress(&src_path_str, &dst_path_str);
+            compression::bz2::compress(src_path, dst_path);
         }
         enums::FileType::Gz => {
-            compression::gz::compress(&src_path_str, &dst_path_str);
+            compression::gz::compress(src_path, dst_path);
         }
         enums::FileType::Tarbz2 => {
-            compression::tar_bz2::compress(&src_path_str, &dst_path_str);
+            compression::tar_bz2::compress(src_path, dst_path);
         }
         enums::FileType::Targz => {
-            compression::tar_gz::compress(&src_path_str, &dst_path_str);
+            compression::tar_gz::compress(src_path, dst_path);
         }
     }
 }
@@ -103,32 +101,30 @@ pub fn decompress(
     src_path: &std::path::PathBuf,
     dst_path: &std::path::PathBuf,
 ) {
-    let src_path_str = src_path.to_owned().into_os_string().into_string().unwrap();
-    let dst_path_str = dst_path.to_owned().into_os_string().into_string().unwrap();
     match file_type {
         enums::FileType::Zip => {
             println!("zip");
-            compression::zip::decompress(&src_path_str, &dst_path_str);
+            compression::zip::decompress(src_path, dst_path);
         }
         enums::FileType::Tar => {
             println!("tar");
-            compression::tar::decompress(&src_path_str, &dst_path_str);
+            compression::tar::decompress(src_path, dst_path);
         }
         enums::FileType::Tarbz2 => {
             println!("tar.bz2");
-            compression::tar_bz2::decompress(&src_path_str, &dst_path_str);
+            compression::tar_bz2::decompress(src_path, dst_path);
         }
         enums::FileType::Targz => {
             println!("tar.gz");
-            compression::tar_gz::decompress(&src_path_str, &dst_path_str);
+            compression::tar_gz::decompress(src_path, dst_path);
         }
         enums::FileType::Bz2 => {
             println!("bz2");
-            compression::bz2::decompress(&src_path_str, &dst_path_str);
+            compression::bz2::decompress(src_path, dst_path);
         }
         enums::FileType::Gz => {
             println!("gz");
-            compression::gz::decompress(&src_path_str, &dst_path_str);
+            compression::gz::decompress(src_path, dst_path);
         }
     }
 }

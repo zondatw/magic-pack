@@ -55,9 +55,7 @@ fn decompress(src_path: &std::path::PathBuf, dst_path: &std::path::PathBuf, leve
     let final_filename = decompress_input
         .file_name()
         .unwrap()
-        .to_os_string()
-        .into_string()
-        .unwrap()
+        .to_string_lossy()
         .replace("mg_", "");
     let mut decompress_final_output = path::PathBuf::from(&decompress_input);
     decompress_final_output.set_file_name(final_filename);
