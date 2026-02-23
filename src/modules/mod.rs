@@ -71,8 +71,8 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
 
 pub fn compress(
     file_type: enums::FileType,
-    src_path: &std::path::PathBuf,
-    dst_path: &std::path::PathBuf,
+    src_path: &std::path::Path,
+    dst_path: &std::path::Path,
 ) {
     match file_type {
         enums::FileType::Zip => {
@@ -98,8 +98,8 @@ pub fn compress(
 
 pub fn decompress(
     file_type: enums::FileType,
-    src_path: &std::path::PathBuf,
-    dst_path: &std::path::PathBuf,
+    src_path: &std::path::Path,
+    dst_path: &std::path::Path,
 ) {
     match file_type {
         enums::FileType::Zip => {

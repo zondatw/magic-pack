@@ -1,7 +1,7 @@
 use std::ffi::OsString;
 use std::fs::File;
-use std::path::{Path, PathBuf};
 use std::io::{Seek, Write};
+use std::path::{Path, PathBuf};
 
 use walkdir::{DirEntry, WalkDir};
 
@@ -56,8 +56,6 @@ pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
         if !is_safe_path(&entry_path) {
             panic!("tar entry path traversal detected");
         }
-        entry
-            .unpack_in(dst_path)
-            .expect("tar unpack failed");
+        entry.unpack_in(dst_path).expect("tar unpack failed");
     }
 }

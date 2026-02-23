@@ -1,8 +1,8 @@
 #[cfg(all(unix, not(target_os = "macos")))]
 mod unix_non_utf8 {
     use std::fs;
-    use std::path::PathBuf;
     use std::os::unix::ffi::OsStringExt;
+    use std::path::PathBuf;
 
     use magic_pack::contents::enums::FileType;
     use magic_pack::modules;

@@ -47,7 +47,7 @@ where
 
         if path.is_file() {
             zip.start_file(name.to_string_lossy().into_owned(), options)
-            .expect("zip start file from path failed");
+                .expect("zip start file from path failed");
             let mut f = File::open(path).expect("zip open compressing-file failed");
 
             f.read_to_end(&mut buffer)
@@ -56,7 +56,7 @@ where
             buffer.clear();
         } else if !path.as_os_str().is_empty() {
             zip.add_directory(name.to_string_lossy().into_owned(), options)
-            .expect("zip add dir from path failed");
+                .expect("zip add dir from path failed");
         }
     }
     zip.finish().expect("zip compress failed");

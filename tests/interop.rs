@@ -5,8 +5,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use magic_pack::contents::enums::FileType;
 use magic_pack::modules;
-use walkdir::WalkDir;
 use std::sync::Once;
+use walkdir::WalkDir;
 
 fn make_unique_dir(name: &str) -> PathBuf {
     let base = PathBuf::from("target/tests");
@@ -50,10 +50,7 @@ fn find_file_by_suffix(root: &Path, suffix: &str) -> Option<PathBuf> {
 }
 
 fn tar_available() -> bool {
-    Command::new("tar")
-        .arg("--version")
-        .output()
-        .is_ok()
+    Command::new("tar").arg("--version").output().is_ok()
 }
 
 fn warn_missing_tar_once() {
@@ -64,10 +61,7 @@ fn warn_missing_tar_once() {
 }
 
 fn gzip_available() -> bool {
-    Command::new("gzip")
-        .arg("--version")
-        .output()
-        .is_ok()
+    Command::new("gzip").arg("--version").output().is_ok()
 }
 
 fn warn_missing_gzip_once() {
@@ -78,10 +72,7 @@ fn warn_missing_gzip_once() {
 }
 
 fn bzip2_available() -> bool {
-    Command::new("bzip2")
-        .arg("--version")
-        .output()
-        .is_ok()
+    Command::new("bzip2").arg("--version").output().is_ok()
 }
 
 fn warn_missing_bzip2_once() {
@@ -92,10 +83,7 @@ fn warn_missing_bzip2_once() {
 }
 
 fn zip_available() -> bool {
-    Command::new("zip")
-        .arg("-v")
-        .output()
-        .is_ok()
+    Command::new("zip").arg("-v").output().is_ok()
         && Command::new("unzip").arg("-v").output().is_ok()
 }
 

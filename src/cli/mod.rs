@@ -10,7 +10,6 @@ use magic_pack::contents::enums;
         .required(true)
         .args(["compress", "decompress"]),
 ))]
-
 pub struct Args {
     // Compress flag
     #[arg(short, long, requires = "file_type")]

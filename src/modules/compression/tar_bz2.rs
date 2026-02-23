@@ -59,8 +59,6 @@ pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
         if !is_safe_path(&entry_path) {
             panic!("tar.bz2 entry path traversal detected");
         }
-        entry
-            .unpack_in(dst_path)
-            .expect("tar.bz2 unpack failed");
+        entry.unpack_in(dst_path).expect("tar.bz2 unpack failed");
     }
 }
