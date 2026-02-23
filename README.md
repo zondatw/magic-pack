@@ -1,6 +1,6 @@
 # Magic pack
 
-This the pack tool, it's provides user can easy to compress and decompress without remember a lot of commands.
+Magic pack is a tool that makes it easy to compress and decompress files without remembering lots of commands.
 
 ## Quick install
 
@@ -18,7 +18,7 @@ just quality
 
 ## Command
 
-### Uages
+### Usage
 
 ```shell
 Magic pack tool
