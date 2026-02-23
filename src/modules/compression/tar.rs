@@ -6,6 +6,8 @@ use walkdir::{DirEntry, WalkDir};
 use tar;
 use tar::Archive;
 
+use crate::utils::is_safe_path;
+
 fn tar_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, tar_file: T)
 where
     T: Write + Seek,
@@ -27,5 +29,14 @@ pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
 pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
     let tar_file = File::open(src_path).expect("tar open failed");
     let mut archive = Archive::new(tar_file);
-    archive.unpack(dst_path).expect("tar unpack failed");
+    for entry in archive.entries().expect("tar entries failed") {
+        let mut entry = entry.expect("tar entry failed");
+        let entry_path = entry.path().expect("tar entry path failed");
+        if !is_safe_path(&entry_path) {
+            panic!("tar entry path traversal detected");
+        }
+        entry
+            .unpack_in(dst_path)
+            .expect("tar unpack failed");
+    }
 }

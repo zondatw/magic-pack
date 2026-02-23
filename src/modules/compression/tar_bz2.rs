@@ -8,6 +8,8 @@ use tar;
 use tar::Archive;
 use walkdir::{DirEntry, WalkDir};
 
+use crate::utils::is_safe_path;
+
 fn tar_bz2_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, tar_bz2_file: T)
 where
     T: Write + Seek,
@@ -33,5 +35,14 @@ pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
     let tar_bz2_file = File::open(src_path).expect("tar.bz2 open failed");
     let dec = BzDecoder::new(tar_bz2_file);
     let mut archive = Archive::new(dec);
-    archive.unpack(dst_path).expect("tar.bz2 unpack failed");
+    for entry in archive.entries().expect("tar.bz2 entries failed") {
+        let mut entry = entry.expect("tar.bz2 entry failed");
+        let entry_path = entry.path().expect("tar.bz2 entry path failed");
+        if !is_safe_path(&entry_path) {
+            panic!("tar.bz2 entry path traversal detected");
+        }
+        entry
+            .unpack_in(dst_path)
+            .expect("tar.bz2 unpack failed");
+    }
 }

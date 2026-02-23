@@ -99,6 +99,7 @@ fn roundtrip_tar_dir() {
     modules::compress(FileType::Tar, &src_dir, &compressed);
 
     let unpack = root.join("unpack");
+    fs::create_dir_all(&unpack).expect("create unpack dir");
     modules::decompress(FileType::Tar, &compressed, &unpack);
 
     let file_a = unpack.join(&src_dir).join("a.txt");
@@ -118,6 +119,7 @@ fn roundtrip_tar_gz_dir() {
     modules::compress(FileType::Targz, &src_dir, &compressed);
 
     let unpack = root.join("unpack");
+    fs::create_dir_all(&unpack).expect("create unpack dir");
     modules::decompress(FileType::Targz, &compressed, &unpack);
 
     let file_a = unpack.join(&src_dir).join("a.txt");
@@ -137,6 +139,7 @@ fn roundtrip_tar_bz2_dir() {
     modules::compress(FileType::Tarbz2, &src_dir, &compressed);
 
     let unpack = root.join("unpack");
+    fs::create_dir_all(&unpack).expect("create unpack dir");
     modules::decompress(FileType::Tarbz2, &compressed, &unpack);
 
     let file_a = unpack.join(&src_dir).join("a.txt");

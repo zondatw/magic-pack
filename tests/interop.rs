@@ -128,6 +128,7 @@ fn tar_command_compress_tool_decompress() {
     assert!(status.success(), "tar compress failed");
 
     let unpack = root.join("unpack");
+    fs::create_dir_all(&unpack).expect("create unpack dir");
     modules::decompress(FileType::Tar, &archive, &unpack);
 
     let file_a = find_file_by_suffix(&unpack, "srcdir/a.txt").expect("find a.txt");
@@ -369,6 +370,7 @@ fn tar_gz_command_compress_tool_decompress() {
     assert!(status.success(), "tar.gz compress failed");
 
     let unpack = root.join("unpack");
+    fs::create_dir_all(&unpack).expect("create unpack dir");
     modules::decompress(FileType::Targz, &archive, &unpack);
 
     let file_a = find_file_by_suffix(&unpack, "srcdir/a.txt").expect("find a.txt");
@@ -401,6 +403,7 @@ fn tar_bz2_command_compress_tool_decompress() {
     assert!(status.success(), "tar.bz2 compress failed");
 
     let unpack = root.join("unpack");
+    fs::create_dir_all(&unpack).expect("create unpack dir");
     modules::decompress(FileType::Tarbz2, &archive, &unpack);
 
     let file_a = find_file_by_suffix(&unpack, "srcdir/a.txt").expect("find a.txt");
