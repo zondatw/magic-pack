@@ -45,6 +45,14 @@ Options:
 ./magic-pack -c -f zip -o temp/temp.zip src
 ./magic-pack -d -o temp/. temp/temp.zip
 
+// gz (single file)
+./magic-pack -c -f gz -o temp/file.txt.gz temp/file.txt
+./magic-pack -d -o temp/. temp/file.txt.gz
+
+// bz2 (single file)
+./magic-pack -c -f bz2 -o temp/file.txt.bz2 temp/file.txt
+./magic-pack -d -o temp/. temp/file.txt.bz2
+
 // tar
 ./magic-pack -c -f tar -o temp/temp.tar src
 ./magic-pack -d -o temp/. temp/temp.tar
@@ -56,6 +64,15 @@ Options:
 // tar.gz
 ./magic-pack -c -f targz -o temp/temp.tar.gz src
 ./magic-pack -d -o temp/. temp/temp.tar.gz
+
+// auto-detect format on decompress
+./magic-pack -d -o temp/. temp/temp.tar.gz
+
+// nested archives (decompress multiple layers)
+./magic-pack -d -l 3 -o temp/. temp/archive.tar.gz
+
+// output to current directory
+./magic-pack -d temp/temp.zip
 ```
 
 ## Reference
