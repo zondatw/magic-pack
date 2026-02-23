@@ -19,6 +19,9 @@ quality: fmt check clippy
 @test:
     cargo test --workspace -- --quiet
 
+@test-show:
+    cargo test --workspace -- --show-output
+
 # run unit tests (in release mode)
 @test-release:
     cargo test --workspace --release --verbose

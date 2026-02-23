@@ -34,6 +34,7 @@ mod non_utf8_skip {
     fn non_utf8_path_gz_roundtrip() {
         // macOS filesystems reject non-UTF8 byte sequences in filenames.
         // Non-UTF8 filenames are otherwise a Unix-specific behavior.
+        eprintln!("macos skip this testcases");
         assert!(true);
     }
 }
