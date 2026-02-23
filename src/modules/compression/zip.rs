@@ -1,18 +1,36 @@
+use std::ffi::OsString;
 use std::fs;
 use std::fs::File;
 use std::io;
 use std::io::BufReader;
 use std::io::{Read, Seek, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use walkdir::{DirEntry, WalkDir};
 use zip;
 use zip::write::FileOptions;
 
+fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
+    let base: Option<OsString> = src_root.file_name().map(|s| s.to_os_string());
+    if entry_path == src_root {
+        if let Some(base) = base {
+            return PathBuf::from(base);
+        }
+    }
+    match entry_path.strip_prefix(src_root) {
+        Ok(rel) => match base {
+            Some(base) => PathBuf::from(base).join(rel),
+            None => rel.to_path_buf(),
+        },
+        Err(_) => entry_path.to_path_buf(),
+    }
+}
+
 fn zip_dir<T>(
     it: &mut dyn Iterator<Item = DirEntry>,
     writer: T,
     method: zip::CompressionMethod,
+    src_root: &Path,
 ) -> zip::result::ZipResult<()>
 where
     T: Write + Seek,
@@ -25,9 +43,10 @@ where
     let mut buffer = Vec::new();
     for entry in it {
         let path = entry.path();
+        let name = archive_path(src_root, path);
 
         if path.is_file() {
-            zip.start_file(path.to_string_lossy().into_owned(), options)
+            zip.start_file(name.to_string_lossy().into_owned(), options)
             .expect("zip start file from path failed");
             let mut f = File::open(path).expect("zip open compressing-file failed");
 
@@ -36,7 +55,7 @@ where
             zip.write_all(&buffer).expect("zip compress file failed");
             buffer.clear();
         } else if !path.as_os_str().is_empty() {
-            zip.add_directory(path.to_string_lossy().into_owned(), options)
+            zip.add_directory(name.to_string_lossy().into_owned(), options)
             .expect("zip add dir from path failed");
         }
     }
@@ -52,6 +71,7 @@ pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
         &mut it.filter_map(|e| e.ok()),
         zip_file,
         zip::CompressionMethod::Stored,
+        src_path,
     )
     .expect("zip compress dir failed");
 }

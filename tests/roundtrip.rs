@@ -82,8 +82,8 @@ fn roundtrip_zip_dir() {
     let unpack = root.join("unpack");
     modules::decompress(FileType::Zip, &compressed, &unpack);
 
-    let file_a = unpack.join(&src_dir).join("a.txt");
-    let file_b = unpack.join(&src_dir).join("sub/b.txt");
+    let file_a = unpack.join("srcdir/a.txt");
+    let file_b = unpack.join("srcdir/sub/b.txt");
 
     assert_eq!(fs::read_to_string(file_a).expect("read a.txt"), "hello");
     assert_eq!(fs::read_to_string(file_b).expect("read b.txt"), "world");
@@ -102,8 +102,8 @@ fn roundtrip_tar_dir() {
     fs::create_dir_all(&unpack).expect("create unpack dir");
     modules::decompress(FileType::Tar, &compressed, &unpack);
 
-    let file_a = unpack.join(&src_dir).join("a.txt");
-    let file_b = unpack.join(&src_dir).join("sub/b.txt");
+    let file_a = unpack.join("srcdir/a.txt");
+    let file_b = unpack.join("srcdir/sub/b.txt");
 
     assert_eq!(fs::read_to_string(file_a).expect("read a.txt"), "hello");
     assert_eq!(fs::read_to_string(file_b).expect("read b.txt"), "world");
@@ -122,8 +122,8 @@ fn roundtrip_tar_gz_dir() {
     fs::create_dir_all(&unpack).expect("create unpack dir");
     modules::decompress(FileType::Targz, &compressed, &unpack);
 
-    let file_a = unpack.join(&src_dir).join("a.txt");
-    let file_b = unpack.join(&src_dir).join("sub/b.txt");
+    let file_a = unpack.join("srcdir/a.txt");
+    let file_b = unpack.join("srcdir/sub/b.txt");
 
     assert_eq!(fs::read_to_string(file_a).expect("read a.txt"), "hello");
     assert_eq!(fs::read_to_string(file_b).expect("read b.txt"), "world");
@@ -142,8 +142,8 @@ fn roundtrip_tar_bz2_dir() {
     fs::create_dir_all(&unpack).expect("create unpack dir");
     modules::decompress(FileType::Tarbz2, &compressed, &unpack);
 
-    let file_a = unpack.join(&src_dir).join("a.txt");
-    let file_b = unpack.join(&src_dir).join("sub/b.txt");
+    let file_a = unpack.join("srcdir/a.txt");
+    let file_b = unpack.join("srcdir/sub/b.txt");
 
     assert_eq!(fs::read_to_string(file_a).expect("read a.txt"), "hello");
     assert_eq!(fs::read_to_string(file_b).expect("read b.txt"), "world");
