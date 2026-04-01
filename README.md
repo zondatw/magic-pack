@@ -8,6 +8,29 @@ Magic pack is a tool that makes it easy to compress and decompress files without
 cargo install magic-pack
 ```
 
+### MCP server
+
+Install the optional MCP server binary:
+
+```shell
+cargo install magic-pack --features mcp --bin magic-pack-mcp
+```
+
+Example MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "magic-pack": {
+      "command": "magic-pack-mcp",
+      "env": {
+        "MAGIC_PACK_MCP_ALLOWED_ROOT": "/absolute/path/you/want/to/allow"
+      }
+    }
+  }
+}
+```
+
 ### Commands
 
 ```shell
