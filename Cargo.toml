@@ -19,6 +19,16 @@ tar = "0.4.38"
 bzip2 = "0.4.4"
 zip = "0.6.4"
 walkdir = "2"
+serde = { version = "=1.0.228", features = ["derive"], optional = true }
+serde_json = { version = "=1.0.149", optional = true }
+itoa = { version = "=1.0.17", optional = true }
+ryu = { version = "=1.0.22", optional = true }
+memchr = { version = "=2.7.6", optional = true }
+zmij = { version = "=1.0.17", optional = true }
+
+[features]
+default = []
+mcp = ["dep:serde", "dep:serde_json", "dep:itoa", "dep:ryu", "dep:memchr", "dep:zmij"]
 
 [lib]
 name = "magic_pack"
@@ -27,3 +37,8 @@ path = "src/lib.rs"
 [[bin]]
 name = "magic-pack"
 path = "src/main.rs"
+
+[[bin]]
+name = "magic-pack-mcp"
+path = "src/bin/magic-pack-mcp.rs"
+required-features = ["mcp"]

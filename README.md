@@ -8,6 +8,66 @@ Magic pack is a tool that makes it easy to compress and decompress files without
 cargo install magic-pack
 ```
 
+### MCP server
+
+Install the optional MCP server binary:
+
+```shell
+cargo install magic-pack --features mcp --bin magic-pack-mcp
+```
+
+Example MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "magic-pack": {
+      "command": "magic-pack-mcp",
+      "env": {
+        "MAGIC_PACK_MCP_ALLOWED_ROOT": "/absolute/path/you/want/to/allow"
+      }
+    }
+  }
+}
+```
+
+Local test example:
+
+```json
+{
+  "mcpServers": {
+    "magic-pack": {
+      "command": "magic-pack-mcp",
+      "env": {
+        "MAGIC_PACK_MCP_ALLOWED_ROOT": "/Users/zonda/Repos/magic-pack"
+      }
+    }
+  }
+}
+```
+
+Codex config example (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.magic-pack]
+command = "cargo"
+args = ["run", "--features", "mcp", "--bin", "magic-pack-mcp"]
+cwd = "/Users/zonda/Repos/magic-pack"
+
+[mcp_servers.magic-pack.env]
+MAGIC_PACK_MCP_ALLOWED_ROOT = "/Users/zonda/Repos/magic-pack"
+```
+
+After saving the MCP config, restart your MCP client so it re-runs `magic-pack-mcp`.
+Then call the tools with absolute paths inside `MAGIC_PACK_MCP_ALLOWED_ROOT`, for example:
+
+```text
+compress /Users/zonda/Repos/magic-pack/temp/test_dir to /Users/zonda/Repos/magic-pack/temp/test_dir.zip as zip
+decompress /Users/zonda/Repos/magic-pack/temp/test_dir.zip to /Users/zonda/Repos/magic-pack/temp/test_dir_unpacked
+detect file type of /Users/zonda/Repos/magic-pack/temp/test_dir.zip
+list supported formats
+```
+
 ### Commands
 
 ```shell

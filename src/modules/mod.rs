@@ -103,27 +103,21 @@ pub fn decompress(
 ) {
     match file_type {
         enums::FileType::Zip => {
-            println!("zip");
             compression::zip::decompress(src_path, dst_path);
         }
         enums::FileType::Tar => {
-            println!("tar");
             compression::tar::decompress(src_path, dst_path);
         }
         enums::FileType::Tarbz2 => {
-            println!("tar.bz2");
             compression::tar_bz2::decompress(src_path, dst_path);
         }
         enums::FileType::Targz => {
-            println!("tar.gz");
             compression::tar_gz::decompress(src_path, dst_path);
         }
         enums::FileType::Bz2 => {
-            println!("bz2");
             compression::bz2::decompress(src_path, dst_path);
         }
         enums::FileType::Gz => {
-            println!("gz");
             compression::gz::decompress(src_path, dst_path);
         }
     }
