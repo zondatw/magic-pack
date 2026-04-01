@@ -10,7 +10,7 @@ cargo install magic-pack
 
 ### MCP server
 
-Install the optional MCP server binary:
+#### Install the optional MCP server binary:
 
 ```shell
 cargo install magic-pack --features mcp --bin magic-pack-mcp
@@ -31,7 +31,17 @@ Example MCP client config:
 }
 ```
 
-Local test example:
+Codex config example (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.magic-pack]
+command = "magic-pack-mcp"
+
+[mcp_servers.magic-pack.env]
+MAGIC_PACK_MCP_ALLOWED_ROOT = "/absolute/path/you/want/to/allow"
+```
+
+#### Local test example:
 
 ```json
 {
