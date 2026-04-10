@@ -13,9 +13,9 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "4.0.26", features = ["derive"] }
+clap = { version = "4.6.0", features = ["derive"] }
 flate2 = "1.0"
-tar = "0.4.38"
+tar = "0.4.45"
 bzip2 = "0.4.4"
 zip = "0.6.4"
 walkdir = "2"
