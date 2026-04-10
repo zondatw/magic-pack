@@ -23,6 +23,8 @@ use magic_pack::contents::enums;
   magic-pack -d -o temp/. temp/temp.tar.bz2
   magic-pack -c -f targz -o temp/temp.tar.gz src
   magic-pack -d -o temp/. temp/temp.tar.gz
+  magic-pack -c -f seven-z -o temp/temp.7z src
+  magic-pack -d -o temp/. temp/temp.7z
   magic-pack -d -l 3 -o temp/. temp/archive.tar.gz
   magic-pack -d temp/temp.zip
 "

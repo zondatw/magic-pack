@@ -151,6 +151,26 @@ fn roundtrip_tar_bz2_dir() {
 }
 
 #[test]
+fn roundtrip_7z_dir() {
+    let root = make_unique_dir("roundtrip_7z");
+    let src_dir = prepare_src_dir(&root, "srcdir");
+
+    let compressed = root.join("out.7z");
+    modules::compress(FileType::SevenZ, &src_dir, &compressed);
+
+    let unpack = root.join("unpack");
+    fs::create_dir_all(&unpack).expect("create unpack dir");
+    modules::decompress(FileType::SevenZ, &compressed, &unpack);
+
+    let file_a = unpack.join("srcdir/a.txt");
+    let file_b = unpack.join("srcdir/sub/b.txt");
+
+    assert_eq!(fs::read_to_string(file_a).expect("read a.txt"), "hello");
+    assert_eq!(fs::read_to_string(file_b).expect("read b.txt"), "world");
+    cleanup_dir(&root);
+}
+
+#[test]
 fn detect_file_types() {
     let root = make_unique_dir("detect_file_types");
 
@@ -169,6 +189,13 @@ fn detect_file_types() {
     let tar_file = root.join("sample.tar");
     fs::write(&tar_file, b"ustar").expect("write tar");
     assert_eq!(modules::get_file_type(&tar_file).unwrap(), FileType::Tar);
+
+    let sevenz_file = root.join("sample.7z");
+    fs::write(&sevenz_file, [0x37, 0x7a, 0xbc, 0xaf]).expect("write 7z");
+    assert_eq!(
+        modules::get_file_type(&sevenz_file).unwrap(),
+        FileType::SevenZ
+    );
 
     cleanup_dir(&root);
 }

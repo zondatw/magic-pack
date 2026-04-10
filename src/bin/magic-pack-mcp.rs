@@ -404,8 +404,9 @@ fn required_file_type(
         "gz" => Ok(FileType::Gz),
         "tarbz2" | "tar.bz2" => Ok(FileType::Tarbz2),
         "targz" | "tar.gz" => Ok(FileType::Targz),
+        "7z" => Ok(FileType::SevenZ),
         _ => Err(invalid_params(
-            "file_type must be one of zip, tar, bz2, gz, tarbz2, targz, tar.bz2, tar.gz",
+            "file_type must be one of zip, tar, bz2, gz, tarbz2, targz, tar.bz2, tar.gz, 7z",
         )),
     }
 }
@@ -441,7 +442,7 @@ fn tool_definitions() -> Vec<Value> {
                     "file_type": {
                         "type": "string",
                         "description": "Archive format to create.",
-                        "enum": ["zip", "tar", "bz2", "gz", "tarbz2", "targz", "tar.bz2", "tar.gz"]
+                        "enum": ["zip", "tar", "bz2", "gz", "tarbz2", "targz", "tar.bz2", "tar.gz", "7z"]
                     }
                 },
                 "required": ["input_path", "file_type"],
@@ -508,6 +509,7 @@ fn file_type_name(file_type: FileType) -> &'static str {
         FileType::Gz => "gz",
         FileType::Tarbz2 => "tar.bz2",
         FileType::Targz => "tar.gz",
+        FileType::SevenZ => "7z",
     }
 }
 

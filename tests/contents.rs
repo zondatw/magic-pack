@@ -39,4 +39,9 @@ mod test_get_file_type_string {
             enums::get_file_type_string(enums::FileType::Targz)
         );
     }
+
+    #[test]
+    fn sevenz() {
+        assert_eq!("7z", enums::get_file_type_string(enums::FileType::SevenZ));
+    }
 }

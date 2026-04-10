@@ -58,7 +58,7 @@ impl From<std::io::Error> for MagicPackError {
 }
 
 pub fn supported_formats() -> Vec<&'static str> {
-    vec!["zip", "tar", "bz2", "gz", "tar.bz2", "tar.gz"]
+    vec!["zip", "tar", "bz2", "gz", "tar.bz2", "tar.gz", "7z"]
 }
 
 pub fn detect_file_type(path: &Path) -> Result<FileType, MagicPackError> {
