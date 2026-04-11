@@ -100,7 +100,7 @@ Arguments:
 
 Options:
   -c, --compress
-  -f <FILE_TYPE>       [possible values: zip, tar, bz2, gz, tarbz2, targz, 7z, xz, tarxz, zst, tarzst]
+  -f <FILE_TYPE>       [possible values: zip, tar, bz2, gz, tarbz2, targz, 7z, xz, tarxz, zst, tarzst, lz4, tarlz4]
   -d, --decompress
   -l, --level <LEVEL>  [default: 5]
   -o <OUTPUT>          [default: .]
@@ -154,6 +154,14 @@ Options:
 // tar.zst
 ./magic-pack -c -f tarzst -o temp/temp.tar.zst src
 ./magic-pack -d -o temp/. temp/temp.tar.zst
+
+// lz4 (single file)
+./magic-pack -c -f lz4 -o temp/file.txt.lz4 temp/file.txt
+./magic-pack -d -o temp/. temp/file.txt.lz4
+
+// tar.lz4
+./magic-pack -c -f tarlz4 -o temp/temp.tar.lz4 src
+./magic-pack -d -o temp/. temp/temp.tar.lz4
 
 // auto-detect format on decompress
 ./magic-pack -d -o temp/. temp/temp.tar.gz

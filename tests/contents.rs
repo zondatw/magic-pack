@@ -70,4 +70,17 @@ mod test_get_file_type_string {
             enums::get_file_type_string(enums::FileType::Tarzst)
         );
     }
+
+    #[test]
+    fn lz4() {
+        assert_eq!("lz4", enums::get_file_type_string(enums::FileType::Lz4));
+    }
+
+    #[test]
+    fn tarlz4() {
+        assert_eq!(
+            "tar.lz4",
+            enums::get_file_type_string(enums::FileType::Tarlz4)
+        );
+    }
 }

@@ -13,6 +13,8 @@ pub enum FileType {
     Tarxz,
     Zst,
     Tarzst,
+    Lz4,
+    Tarlz4,
 }
 
 pub fn get_file_type_string(file_type: FileType) -> &'static str {
@@ -28,5 +30,7 @@ pub fn get_file_type_string(file_type: FileType) -> &'static str {
         FileType::Tarxz => "tar.xz",
         FileType::Zst => "zst",
         FileType::Tarzst => "tar.zst",
+        FileType::Lz4 => "lz4",
+        FileType::Tarlz4 => "tar.lz4",
     }
 }

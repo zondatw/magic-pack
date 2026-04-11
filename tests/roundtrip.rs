@@ -245,6 +245,43 @@ fn roundtrip_tar_zst_dir() {
 }
 
 #[test]
+fn roundtrip_lz4() {
+    let root = make_unique_dir("roundtrip_lz4");
+    let src = root.join("src.txt");
+    write_file(&src, "hello lz4");
+
+    let compressed = root.join("out.lz4");
+    modules::compress(FileType::Lz4, &src, &compressed);
+
+    let decompressed = root.join("out.txt");
+    modules::decompress(FileType::Lz4, &compressed, &decompressed);
+
+    let contents = fs::read_to_string(&decompressed).expect("read decompressed");
+    assert_eq!(contents, "hello lz4");
+    cleanup_dir(&root);
+}
+
+#[test]
+fn roundtrip_tar_lz4_dir() {
+    let root = make_unique_dir("roundtrip_tarlz4");
+    let src_dir = prepare_src_dir(&root, "srcdir");
+
+    let compressed = root.join("out.tar.lz4");
+    modules::compress(FileType::Tarlz4, &src_dir, &compressed);
+
+    let unpack = root.join("unpack");
+    fs::create_dir_all(&unpack).expect("create unpack dir");
+    modules::decompress(FileType::Tarlz4, &compressed, &unpack);
+
+    let file_a = unpack.join("srcdir/a.txt");
+    let file_b = unpack.join("srcdir/sub/b.txt");
+
+    assert_eq!(fs::read_to_string(file_a).expect("read a.txt"), "hello");
+    assert_eq!(fs::read_to_string(file_b).expect("read b.txt"), "world");
+    cleanup_dir(&root);
+}
+
+#[test]
 fn detect_file_types() {
     let root = make_unique_dir("detect_file_types");
 
@@ -278,6 +315,10 @@ fn detect_file_types() {
     let zst_file = root.join("sample.zst");
     fs::write(&zst_file, [0x28, 0xb5, 0x2f, 0xfd]).expect("write zst");
     assert_eq!(modules::get_file_type(&zst_file).unwrap(), FileType::Zst);
+
+    let lz4_file = root.join("sample.lz4");
+    fs::write(&lz4_file, [0x04, 0x22, 0x4d, 0x18]).expect("write lz4");
+    assert_eq!(modules::get_file_type(&lz4_file).unwrap(), FileType::Lz4);
 
     cleanup_dir(&root);
 }

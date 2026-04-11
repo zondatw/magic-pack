@@ -60,6 +60,7 @@ impl From<std::io::Error> for MagicPackError {
 pub fn supported_formats() -> Vec<&'static str> {
     vec![
         "zip", "tar", "bz2", "gz", "tar.bz2", "tar.gz", "7z", "xz", "tar.xz", "zst", "tar.zst",
+        "lz4", "tar.lz4",
     ]
 }
 
