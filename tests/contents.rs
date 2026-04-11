@@ -44,4 +44,17 @@ mod test_get_file_type_string {
     fn sevenz() {
         assert_eq!("7z", enums::get_file_type_string(enums::FileType::SevenZ));
     }
+
+    #[test]
+    fn xz() {
+        assert_eq!("xz", enums::get_file_type_string(enums::FileType::Xz));
+    }
+
+    #[test]
+    fn tarxz() {
+        assert_eq!(
+            "tar.xz",
+            enums::get_file_type_string(enums::FileType::Tarxz)
+        );
+    }
 }

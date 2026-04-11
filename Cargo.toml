@@ -20,6 +20,7 @@ bzip2 = "0.4.4"
 zip = "0.6.4"
 walkdir = "2"
 sevenz-rust = "0.6"
+xz2 = "0.1"
 serde = { version = "=1.0.228", features = ["derive"], optional = true }
 serde_json = { version = "=1.0.149", optional = true }
 itoa = { version = "=1.0.17", optional = true }

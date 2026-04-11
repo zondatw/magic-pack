@@ -39,6 +39,11 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
             length: 4,
             file_type: enums::FileType::SevenZ,
         },
+        CompressMagic {
+            magic_number: &[0xfd, 0x37, 0x7a, 0x58],
+            length: 4,
+            file_type: enums::FileType::Xz,
+        },
     ];
 
     let compress_magic_include_list = [CompressMagic {
@@ -101,6 +106,12 @@ pub fn compress(
         enums::FileType::SevenZ => {
             compression::sevenz::compress(src_path, dst_path);
         }
+        enums::FileType::Xz => {
+            compression::xz::compress(src_path, dst_path);
+        }
+        enums::FileType::Tarxz => {
+            compression::tar_xz::compress(src_path, dst_path);
+        }
     }
 }
 
@@ -130,6 +141,12 @@ pub fn decompress(
         }
         enums::FileType::SevenZ => {
             compression::sevenz::decompress(src_path, dst_path);
+        }
+        enums::FileType::Xz => {
+            compression::xz::decompress(src_path, dst_path);
+        }
+        enums::FileType::Tarxz => {
+            compression::tar_xz::decompress(src_path, dst_path);
         }
     }
 }
