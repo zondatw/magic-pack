@@ -57,4 +57,17 @@ mod test_get_file_type_string {
             enums::get_file_type_string(enums::FileType::Tarxz)
         );
     }
+
+    #[test]
+    fn zst() {
+        assert_eq!("zst", enums::get_file_type_string(enums::FileType::Zst));
+    }
+
+    #[test]
+    fn tarzst() {
+        assert_eq!(
+            "tar.zst",
+            enums::get_file_type_string(enums::FileType::Tarzst)
+        );
+    }
 }
