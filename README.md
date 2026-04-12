@@ -8,6 +8,40 @@ Magic pack is a tool that makes it easy to compress and decompress files without
 cargo install magic-pack
 ```
 
+### Ubuntu / Debian (apt)
+
+Download the latest `.deb` from [GitHub Releases](https://github.com/zondatw/magic-pack/releases/latest) and install:
+
+```shell
+# x86_64
+wget https://github.com/zondatw/magic-pack/releases/latest/download/magic-pack_0.10.0_amd64.deb
+sudo apt install ./magic-pack_0.10.0_amd64.deb
+
+# arm64 (e.g. Raspberry Pi, AWS Graviton)
+wget https://github.com/zondatw/magic-pack/releases/latest/download/magic-pack_0.10.0_arm64.deb
+sudo apt install ./magic-pack_0.10.0_arm64.deb
+```
+
+### Arch Linux (AUR)
+
+Install from the AUR using your preferred AUR helper:
+
+```shell
+# build from source
+yay -S magic-pack
+
+# or pre-built binary (faster)
+yay -S magic-pack-bin
+```
+
+Or manually with `makepkg`:
+
+```shell
+git clone https://aur.archlinux.org/magic-pack.git
+cd magic-pack
+makepkg -si
+```
+
 ### MCP server
 
 #### Install the optional MCP server binary:
