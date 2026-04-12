@@ -71,7 +71,12 @@ jobs:
       - name: Install cargo-deb
         run: cargo install cargo-deb
       - name: Package deb
-        run: cargo deb --target ${{ matrix.target }} --no-build
+        run: |
+          FLAGS="--target ${{ matrix.target }} --no-build"
+          if [ "${{ matrix.use_cross }}" = "true" ]; then
+            FLAGS="$FLAGS --no-strip"
+          fi
+          cargo deb $FLAGS
       - name: Upload deb to release
         uses: softprops/action-gh-release@v1
         with:
@@ -86,7 +91,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Update pkgver
         run: sed -i "s/^pkgver=.*/pkgver=${GITHUB_REF_NAME#v}/" aur/magic-pack/PKGBUILD
-      - uses: KSXGitHub/github-actions-deploy-aur@v3
+      - uses: KSXGitHub/github-actions-deploy-aur@v4
         with:
           pkgname: magic-pack
           pkgbuild: aur/magic-pack/PKGBUILD
@@ -102,7 +107,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Update pkgver
         run: sed -i "s/^pkgver=.*/pkgver=${GITHUB_REF_NAME#v}/" aur/magic-pack-bin/PKGBUILD
-      - uses: KSXGitHub/github-actions-deploy-aur@v3
+      - uses: KSXGitHub/github-actions-deploy-aur@v4
         with:
           pkgname: magic-pack-bin
           pkgbuild: aur/magic-pack-bin/PKGBUILD

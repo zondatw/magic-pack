@@ -52,7 +52,7 @@ maintainer = "Zonda Yang <u226699@gmail.com>"
 copyright = "2023, Zonda Yang <u226699@gmail.com>"
 license-file = ["LICENSE", "4"]
 extended-description = "A CLI tool for compressing and decompressing files with multiple formats including gz, bz2, xz, zst, lz4, zip, 7z, and tar variants."
-depends = "$auto"
+depends = "libc6 (>= 2.17), libgcc-s1"
 section = "utils"
 priority = "optional"
 assets = [
