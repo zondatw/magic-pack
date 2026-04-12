@@ -1,0 +1,17 @@
+# Maintainer: Zonda Yang <u226699@gmail.com>
+pkgname=magic-pack-bin
+pkgver=0.10.0
+pkgrel=1
+pkgdesc="A CLI tool for compressing and decompressing files with multiple formats (pre-built binary)"
+arch=('x86_64')
+url="https://github.com/zondatw/magic-pack"
+license=('MIT')
+depends=()
+provides=('magic-pack')
+conflicts=('magic-pack')
+source_x86_64=("magic-pack-x86_64-unknown-linux-gnu.tar.gz::https://github.com/zondatw/magic-pack/releases/download/v${pkgver}/magic-pack-x86_64-unknown-linux-gnu.tar.gz")
+sha256sums_x86_64=('SKIP')
+
+package() {
+    install -Dm755 "magic-pack" "$pkgdir/usr/bin/magic-pack"
+}
