@@ -74,6 +74,38 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  deploy-aur-source:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Update pkgver
+        run: sed -i "s/^pkgver=.*/pkgver=${GITHUB_REF_NAME#v}/" aur/magic-pack/PKGBUILD
+      - uses: KSXGitHub/github-actions-deploy-aur@v3
+        with:
+          pkgname: magic-pack
+          pkgbuild: aur/magic-pack/PKGBUILD
+          commit_username: ${{ vars.AUR_USERNAME }}
+          commit_email: ${{ vars.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          updpkgsums: true
+
+  deploy-aur-bin:
+    needs: upload-assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Update pkgver
+        run: sed -i "s/^pkgver=.*/pkgver=${GITHUB_REF_NAME#v}/" aur/magic-pack-bin/PKGBUILD
+      - uses: KSXGitHub/github-actions-deploy-aur@v3
+        with:
+          pkgname: magic-pack-bin
+          pkgbuild: aur/magic-pack-bin/PKGBUILD
+          commit_username: ${{ vars.AUR_USERNAME }}
+          commit_email: ${{ vars.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          updpkgsums: true
+
   publish:
     runs-on: ubuntu-latest
     steps:
