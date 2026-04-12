@@ -46,3 +46,16 @@ path = "src/main.rs"
 name = "magic-pack-mcp"
 path = "src/bin/magic-pack-mcp.rs"
 required-features = ["mcp"]
+
+[package.metadata.deb]
+maintainer = "Zonda Yang <u226699@gmail.com>"
+copyright = "2023, Zonda Yang <u226699@gmail.com>"
+license-file = ["LICENSE", "4"]
+extended-description = "A CLI tool for compressing and decompressing files with multiple formats including gz, bz2, xz, zst, lz4, zip, 7z, and tar variants."
+depends = "$auto"
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/magic-pack", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/magic-pack/README.md", "644"],
+]
