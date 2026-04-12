@@ -1,6 +1,6 @@
 # Maintainer: Zonda Yang <u226699@gmail.com>
 pkgname=magic-pack-bin
-pkgver=0.10.1
+pkgver=0.10.2
 pkgrel=1
 pkgdesc="A CLI tool for compressing and decompressing files with multiple formats (pre-built binary)"
 arch=('x86_64' 'aarch64')
