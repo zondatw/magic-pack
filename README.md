@@ -14,12 +14,12 @@ Download the latest `.deb` from [GitHub Releases](https://github.com/zondatw/mag
 
 ```shell
 # x86_64
-wget https://github.com/zondatw/magic-pack/releases/latest/download/magic-pack_0.10.2_amd64.deb
-sudo apt install ./magic-pack_0.10.2_amd64.deb
+wget https://github.com/zondatw/magic-pack/releases/latest/download/magic-pack_0.10.3_amd64.deb
+sudo apt install ./magic-pack_0.10.3_amd64.deb
 
 # arm64 (e.g. Raspberry Pi, AWS Graviton)
-wget https://github.com/zondatw/magic-pack/releases/latest/download/magic-pack_0.10.2_arm64.deb
-sudo apt install ./magic-pack_0.10.2_arm64.deb
+wget https://github.com/zondatw/magic-pack/releases/latest/download/magic-pack_0.10.3_arm64.deb
+sudo apt install ./magic-pack_0.10.3_arm64.deb
 ```
 
 ### Arch Linux (AUR)
