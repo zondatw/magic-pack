@@ -51,6 +51,7 @@ pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
 }
 
 pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+    std::fs::create_dir_all(dst_path).expect("tar.gz create dst dir failed");
     let tar_gz_file = File::open(src_path).expect("tar.gz open failed");
     let dec = GzDecoder::new(tar_gz_file);
     let mut archive = Archive::new(dec);

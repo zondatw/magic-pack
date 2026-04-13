@@ -50,6 +50,7 @@ pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
 }
 
 pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+    std::fs::create_dir_all(dst_path).expect("tar.zst create dst dir failed");
     let src_file = File::open(src_path).expect("tar.zst open failed");
     let dec = zstd::Decoder::new(src_file).expect("zst decoder failed");
     let mut archive = Archive::new(dec);

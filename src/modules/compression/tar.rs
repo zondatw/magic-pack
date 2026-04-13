@@ -48,6 +48,7 @@ pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
 }
 
 pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+    std::fs::create_dir_all(dst_path).expect("tar create dst dir failed");
     let tar_file = File::open(src_path).expect("tar open failed");
     let mut archive = Archive::new(tar_file);
     for entry in archive.entries().expect("tar entries failed") {

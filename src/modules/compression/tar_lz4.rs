@@ -50,6 +50,7 @@ pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
 }
 
 pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+    std::fs::create_dir_all(dst_path).expect("tar.lz4 create dst dir failed");
     let src_file = File::open(src_path).expect("tar.lz4 open failed");
     let dec = lz4_flex::frame::FrameDecoder::new(src_file);
     let mut archive = Archive::new(dec);
