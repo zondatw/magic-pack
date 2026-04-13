@@ -29,9 +29,7 @@ fn tar_lz4_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, dst_file: T, src_root:
 where
     T: Write,
 {
-    let enc = lz4::EncoderBuilder::new()
-        .build(dst_file)
-        .expect("lz4 encoder failed");
+    let enc = lz4_flex::frame::FrameEncoder::new(dst_file);
     let mut builder = tar::Builder::new(enc);
     for entry in it {
         let path = entry.path();
@@ -41,8 +39,7 @@ where
             .expect("tar.lz4 append failed");
     }
     let enc = builder.into_inner().expect("tar.lz4 finish failed");
-    let (_, result) = enc.finish();
-    result.expect("lz4 finish failed");
+    enc.finish().expect("lz4 finish failed");
 }
 
 pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
@@ -54,7 +51,7 @@ pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
 
 pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
     let src_file = File::open(src_path).expect("tar.lz4 open failed");
-    let dec = lz4::Decoder::new(src_file).expect("lz4 decoder failed");
+    let dec = lz4_flex::frame::FrameDecoder::new(src_file);
     let mut archive = Archive::new(dec);
     for entry in archive.entries().expect("tar.lz4 entries failed") {
         let mut entry = entry.expect("tar.lz4 entry failed");
