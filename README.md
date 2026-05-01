@@ -120,6 +120,33 @@ just all-release
 just quality
 ```
 
+## Skill for AI agents
+
+The repo ships a Claude Code skill at `skills/magic-pack/` that teaches **other** Claude / Codex agents when to invoke magic-pack and how to read its output. It's the prompt-side companion to the MCP server above — MCP gives the agent the tools, the skill teaches it which tool to pick and how to interpret the result.
+
+Install the skill into Claude's user-global skills directory:
+
+```shell
+# clone into a stable location, then symlink — keeps the skill in
+# sync if the repo updates
+git clone https://github.com/zondatw/magic-pack ~/src/magic-pack
+ln -s ~/src/magic-pack/skills/magic-pack ~/.claude/skills/magic-pack
+```
+
+Or copy just the markdown if you don't want a clone:
+
+```shell
+mkdir -p ~/.claude/skills/magic-pack
+curl -L https://raw.githubusercontent.com/zondatw/magic-pack/main/skills/magic-pack/SKILL.md \
+  -o ~/.claude/skills/magic-pack/SKILL.md
+curl -L https://raw.githubusercontent.com/zondatw/magic-pack/main/skills/magic-pack/recipes.md \
+  -o ~/.claude/skills/magic-pack/recipes.md
+```
+
+For OpenAI Codex, the same `skills/magic-pack/` directory works — drop it under `~/.codex/skills/magic-pack/` (or symlink it) so Codex's skill discovery picks it up. The MCP wiring in `~/.codex/config.toml` shown above is what gives the agent the actual tools; the skill only adds the trigger-phrase / decision-tree layer on top.
+
+After installation the agent automatically discovers the skill via its `description` field; no further config edit is needed. The skill itself detects whether `magic-pack-mcp` / `magic-pack` are on PATH and falls back to surfacing the `cargo install magic-pack --features mcp` command if they aren't.
+
 ## Command
 
 ### Usage
