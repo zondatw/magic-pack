@@ -161,7 +161,7 @@ Arguments:
 
 Options:
   -c, --compress
-  -f <FILE_TYPE>       [possible values: zip, tar, bz2, gz, tarbz2, targz, 7z, xz, tarxz, zst, tarzst, lz4, tarlz4]
+  -f <FILE_TYPE>       [possible values: zip, tar, bz2, gz, tarbz2, targz, 7z, xz, tarxz, zst, tarzst, lz4, tarlz4, upx]
   -d, --decompress
   -l, --level <LEVEL>  [default: 5]
   -o <OUTPUT>          [default: .]
@@ -224,6 +224,10 @@ Options:
 ./magic-pack -c -f tarlz4 -o temp/temp.tar.lz4 src
 ./magic-pack -d -o temp/. temp/temp.tar.lz4
 
+// upx (executable packer; requires the `upx` binary on PATH)
+./magic-pack -c -f upx -o temp/hello.upx hello
+./magic-pack -d -o temp/. temp/hello.upx
+
 // auto-detect format on decompress
 ./magic-pack -d -o temp/. temp/temp.tar.gz
 
@@ -233,6 +237,26 @@ Options:
 // output to current directory
 ./magic-pack -d temp/temp.zip
 ```
+
+### UPX dependency
+
+The `upx` format detects, packs, and unpacks executable binaries (PE / ELF / Mach-O) by shelling out to the `upx` binary. Install it separately:
+
+```shell
+# Debian / Ubuntu
+sudo apt install upx-ucl
+
+# macOS (Homebrew)
+brew install upx
+
+# Arch Linux
+sudo pacman -S upx
+
+# Windows (Scoop)
+scoop install upx
+```
+
+Note: UPX-packed Mach-O binaries on Apple Silicon may fail to execute under macOS code-signing; UPX 5.x requires `--force-macos` even to produce one. For Mach-O work, prefer Linux ELF or Windows PE targets.
 
 ## Reference
 

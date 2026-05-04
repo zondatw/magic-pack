@@ -411,8 +411,9 @@ fn required_file_type(
         "tarzst" | "tar.zst" => Ok(FileType::Tarzst),
         "lz4" => Ok(FileType::Lz4),
         "tarlz4" | "tar.lz4" => Ok(FileType::Tarlz4),
+        "upx" => Ok(FileType::Upx),
         _ => Err(invalid_params(
-            "file_type must be one of zip, tar, bz2, gz, tarbz2, targz, tar.bz2, tar.gz, 7z, xz, tarxz, tar.xz, zst, tarzst, tar.zst, lz4, tarlz4, tar.lz4",
+            "file_type must be one of zip, tar, bz2, gz, tarbz2, targz, tar.bz2, tar.gz, 7z, xz, tarxz, tar.xz, zst, tarzst, tar.zst, lz4, tarlz4, tar.lz4, upx",
         )),
     }
 }
@@ -447,8 +448,8 @@ fn tool_definitions() -> Vec<Value> {
                     },
                     "file_type": {
                         "type": "string",
-                        "description": "Archive format to create.",
-                        "enum": ["zip", "tar", "bz2", "gz", "tarbz2", "targz", "tar.bz2", "tar.gz", "7z", "xz", "tarxz", "tar.xz", "zst", "tarzst", "tar.zst", "lz4", "tarlz4", "tar.lz4"]
+                        "description": "Archive format to create. `upx` packs an executable (PE / ELF / Mach-O) and shells out to the `upx` binary on PATH.",
+                        "enum": ["zip", "tar", "bz2", "gz", "tarbz2", "targz", "tar.bz2", "tar.gz", "7z", "xz", "tarxz", "tar.xz", "zst", "tarzst", "tar.zst", "lz4", "tarlz4", "tar.lz4", "upx"]
                     }
                 },
                 "required": ["input_path", "file_type"],
@@ -522,6 +523,7 @@ fn file_type_name(file_type: FileType) -> &'static str {
         FileType::Tarzst => "tar.zst",
         FileType::Lz4 => "lz4",
         FileType::Tarlz4 => "tar.lz4",
+        FileType::Upx => "upx",
     }
 }
 

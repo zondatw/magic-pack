@@ -173,6 +173,58 @@ move the file inside the allow-list, or update
 — surface it to the user so they know which file to move (or which
 config entry to widen). Don't silently retry with a different path.
 
+## 6. Identify and unpack a UPX-packed binary
+
+**Trigger**: "Someone sent me a `.exe` and it's tiny / acts weird",
+"Is this binary packed?", "Unpack this UPX-packed sample".
+
+**Strategy**: detect first to be honest about what we're looking at,
+then decompress. UPX detection requires both a real executable
+header (PE / ELF / Mach-O) **and** at least two `UPX!` markers in
+the first 16 KB — false positives on text files are not possible.
+
+```jsonc
+{ "name": "detect_file_type", "arguments": {
+    "input_path": "/Users/me/Downloads/sample.exe"
+}}
+// → { "ok": true, "file_type": "upx" }
+
+// Confirmed packed → unpack. Auto-detect, no `file_type` needed.
+{ "name": "decompress", "arguments": {
+    "input_path":  "/Users/me/Downloads/sample.exe",
+    "output_path": "/Users/me/Downloads/"
+}}
+// → { "ok": true,
+//     "output_path": "/Users/me/Downloads/sample.unpacked.exe" }
+```
+
+**Read-out**: filename rule — if the input has a `.upx` infix
+(`foo.upx.exe`), it's stripped to give back `foo.exe`. If there's no
+`.upx` infix, `.unpacked` is inserted before the extension instead.
+The MCP response's `output_path` always names the actual file —
+surface that to the user.
+
+**Pre-flight check**: before the first UPX call in a session, surface
+the install hint if `upx` isn't on PATH. The skill detects this when
+`decompress` returns an error containing `"upx binary not found on
+PATH"` — at that point list the four platform-specific install
+commands and stop until the user installs.
+
+**macOS caveat**: on Apple Silicon, UPX-packed Mach-O binaries often
+fail to execute due to hardened-runtime / code-signing constraints.
+For Mach-O work, **decompressing** an already-packed binary still
+recovers the original bytes; **packing** a fresh Mach-O binary needs
+`upx --force-macos` (which we don't expose) and the resulting binary
+typically can't run anyway. Recommend the user target Linux ELF or
+Windows PE if they actually need a runnable packed binary.
+
+**Triage signal**: legitimate use cases for UPX-packed binaries are
+release-size reduction, demoscene, embedded firmware. UPX-packed
+binaries from unfamiliar sources are also a common malware
+obfuscation pattern — the skill identifies the format honestly and
+hands off; what to do with the unpacked binary (run? sandbox?
+analyse?) is a downstream judgment call.
+
 ## Recipe selection
 
 When unsure which recipe a user query maps to:
@@ -184,5 +236,6 @@ When unsure which recipe a user query maps to:
 | nested / recursive / multi-layer extract | #3 |
 | "Not a directory" error / single-file vs dir | #4 |
 | "outside ALLOWED_ROOT" error / config issue | #5 |
+| UPX / packed exe / "is this binary packed" / executable packer | #6 |
 | "what kind of file is this" | start with `detect_file_type`, no recipe needed |
 | "what formats do you support" | `supported_formats`, no recipe needed |

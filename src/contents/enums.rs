@@ -15,6 +15,17 @@ pub enum FileType {
     Tarzst,
     Lz4,
     Tarlz4,
+    Upx,
+}
+
+impl FileType {
+    /// Executable packers wrap a binary in place instead of producing a
+    /// new container, so they need bespoke filename handling in the
+    /// service layer (preserve the original extension on compress, strip
+    /// the `.upx` infix on decompress).
+    pub fn is_executable_packer(self) -> bool {
+        matches!(self, FileType::Upx)
+    }
 }
 
 pub fn get_file_type_string(file_type: FileType) -> &'static str {
@@ -32,5 +43,6 @@ pub fn get_file_type_string(file_type: FileType) -> &'static str {
         FileType::Tarzst => "tar.zst",
         FileType::Lz4 => "lz4",
         FileType::Tarlz4 => "tar.lz4",
+        FileType::Upx => "upx",
     }
 }

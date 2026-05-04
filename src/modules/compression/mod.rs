@@ -8,6 +8,7 @@ pub mod tar_gz;
 pub mod tar_lz4;
 pub mod tar_xz;
 pub mod tar_zst;
+pub mod upx;
 pub mod xz;
 pub mod zip;
 pub mod zst;
