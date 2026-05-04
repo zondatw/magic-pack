@@ -146,26 +146,30 @@ fn service_compress_then_decompress_roundtrips_byte_equal() {
     let staged = dir.join("hello.bin");
     fs::copy(&unpacked_src, &staged).unwrap();
 
+    // `service::compress` treats `output != "."` as the explicit
+    // archive file path (per the SKILL.md gotcha), not a directory.
+    let pack_target = dir.join("hello.upx.bin");
     let pack_result = service::compress(CompressRequest {
         file_type: FileType::Upx,
         input: staged.clone(),
-        output: dir.clone(),
+        output: pack_target.clone(),
     })
     .expect("compress should succeed");
 
-    // Filename UX: hello.bin → hello.upx.bin
-    assert_eq!(pack_result.output_path, dir.join("hello.upx.bin"));
+    assert_eq!(pack_result.output_path, pack_target);
 
+    // Stage the unpack into a fresh sub-dir so it doesn't collide with
+    // the `hello.bin` we used as compress input.
+    let unpack_dir = dir.join("unpack-out");
     let unpack_result = service::decompress(DecompressRequest {
         input: pack_result.output_path,
-        output: dir.clone(),
+        output: unpack_dir.clone(),
         level: 5,
     })
     .expect("decompress should succeed");
 
-    // .upx.bin → .bin (note: original input was also hello.bin; output
-    // collides with the staged copy so service.rs writes over it).
-    assert_eq!(unpack_result.output_path, dir.join("hello.bin"));
+    // .upx.bin → .bin
+    assert_eq!(unpack_result.output_path, unpack_dir.join("hello.bin"));
     let original = fs::read(&unpacked_src).unwrap();
     let unpacked = fs::read(&unpack_result.output_path).unwrap();
     assert_eq!(unpacked, original);
