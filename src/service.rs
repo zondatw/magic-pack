@@ -60,7 +60,7 @@ impl From<std::io::Error> for MagicPackError {
 pub fn supported_formats() -> Vec<&'static str> {
     vec![
         "zip", "tar", "bz2", "gz", "tar.bz2", "tar.gz", "7z", "xz", "tar.xz", "zst", "tar.zst",
-        "lz4", "tar.lz4",
+        "lz4", "tar.lz4", "upx",
     ]
 }
 
@@ -95,6 +95,15 @@ pub fn decompress(req: DecompressRequest) -> Result<OperationResult, MagicPackEr
 
     if req.output != Path::new(".") {
         fs::create_dir_all(&req.output)?;
+    }
+
+    // Executable packers (UPX) work file-to-file in a single step. The
+    // generic level-loop below assumes archive containers and uses
+    // file_stem() to strip extensions, which mangles binary filenames.
+    // Detect once up front and take a dedicated path for packers.
+    let initial_type = detect_file_type(&req.input)?;
+    if initial_type.is_executable_packer() {
+        return decompress_executable_packer(&req, initial_type);
     }
 
     let src_filename = req.input.file_stem().ok_or_else(|| {
@@ -187,12 +196,87 @@ fn default_compress_output_path(
     dst_path: &Path,
     file_type: FileType,
 ) -> Result<PathBuf, MagicPackError> {
+    if file_type.is_executable_packer() {
+        return default_packer_compress_output_path(src_path, dst_path, file_type);
+    }
     let filename = src_path.file_stem().ok_or_else(|| {
         MagicPackError::InvalidInput("input path must include a file name".into())
     })?;
     let mut temp_output = dst_path.join(filename);
     temp_output.set_extension(enums::get_file_type_string(file_type));
     Ok(temp_output)
+}
+
+/// `foo.exe` → `foo.upx.exe`. `foo` (no extension) → `foo.upx`. Keeps
+/// the original extension so the produced binary stays runnable on the
+/// target platform.
+fn default_packer_compress_output_path(
+    src_path: &Path,
+    dst_path: &Path,
+    file_type: FileType,
+) -> Result<PathBuf, MagicPackError> {
+    let filename = src_path.file_name().ok_or_else(|| {
+        MagicPackError::InvalidInput("input path must include a file name".into())
+    })?;
+    let format_str = enums::get_file_type_string(file_type);
+    let name_path = Path::new(filename);
+    let new_name = match (name_path.file_stem(), name_path.extension()) {
+        (Some(stem), Some(ext)) => format!(
+            "{}.{}.{}",
+            stem.to_string_lossy(),
+            format_str,
+            ext.to_string_lossy()
+        ),
+        _ => format!("{}.{}", filename.to_string_lossy(), format_str),
+    };
+    Ok(dst_path.join(new_name))
+}
+
+/// `foo.upx.exe` → `foo.exe`. `foo.exe` (no `.upx` infix) →
+/// `foo.unpacked.exe`. `foo` → `foo.unpacked`.
+fn derive_packer_decompressed_name(input: &Path) -> Result<String, MagicPackError> {
+    let filename = input
+        .file_name()
+        .ok_or_else(|| MagicPackError::InvalidInput("input path must include a file name".into()))?
+        .to_string_lossy()
+        .into_owned();
+
+    if let Some(idx) = filename.find(".upx.") {
+        let mut result = String::with_capacity(filename.len() - 4);
+        result.push_str(&filename[..idx]);
+        result.push_str(&filename[idx + 4..]);
+        return Ok(result);
+    }
+    if let Some(stripped) = filename.strip_suffix(".upx") {
+        return Ok(stripped.to_string());
+    }
+
+    let path = Path::new(&filename);
+    match (path.file_stem(), path.extension()) {
+        (Some(stem), Some(ext)) => Ok(format!(
+            "{}.unpacked.{}",
+            stem.to_string_lossy(),
+            ext.to_string_lossy()
+        )),
+        _ => Ok(format!("{}.unpacked", filename)),
+    }
+}
+
+fn decompress_executable_packer(
+    req: &DecompressRequest,
+    file_type: FileType,
+) -> Result<OperationResult, MagicPackError> {
+    let dst_filename = derive_packer_decompressed_name(&req.input)?;
+    let dst_path = req.output.join(&dst_filename);
+    let dst_clone = dst_path.clone();
+    let input = req.input.clone();
+    run_operation("decompress", move || {
+        modules::decompress(file_type, &input, &dst_clone);
+    })?;
+    Ok(OperationResult {
+        output_path: dst_path,
+        message: String::from("decompressed"),
+    })
 }
 
 fn run_operation<F>(label: &str, operation: F) -> Result<(), MagicPackError>
@@ -209,4 +293,69 @@ where
         };
         MagicPackError::OperationFailed(message)
     })
+}
+
+#[cfg(test)]
+mod packer_filename_tests {
+    use super::*;
+
+    #[test]
+    fn compress_default_preserves_extension() {
+        let cwd = Path::new(".");
+        let cases = [
+            ("foo.exe", "./foo.upx.exe"),
+            ("foo", "./foo.upx"),
+            ("a.b.c.exe", "./a.b.c.upx.exe"),
+        ];
+        for (input, expected) in cases {
+            let got =
+                default_packer_compress_output_path(Path::new(input), cwd, FileType::Upx).unwrap();
+            assert_eq!(got, PathBuf::from(expected), "input={}", input);
+        }
+    }
+
+    #[test]
+    fn decompress_strips_upx_infix_or_adds_unpacked() {
+        let cases = [
+            ("foo.upx.exe", "foo.exe"),
+            ("foo.upx", "foo"),
+            ("a.b.upx.c", "a.b.c"),
+            ("foo.exe", "foo.unpacked.exe"),
+            ("foo", "foo.unpacked"),
+            ("a.b.c.exe", "a.b.c.unpacked.exe"),
+        ];
+        for (input, expected) in cases {
+            let got = derive_packer_decompressed_name(Path::new(input)).unwrap();
+            assert_eq!(got, expected, "input={}", input);
+        }
+    }
+
+    #[test]
+    fn is_executable_packer_predicate_table() {
+        // Every variant must be classified explicitly — when a new
+        // variant is added the compiler-driven match prevents drift.
+        for (variant, expected) in [
+            (FileType::Zip, false),
+            (FileType::Tar, false),
+            (FileType::Bz2, false),
+            (FileType::Gz, false),
+            (FileType::Tarbz2, false),
+            (FileType::Targz, false),
+            (FileType::SevenZ, false),
+            (FileType::Xz, false),
+            (FileType::Tarxz, false),
+            (FileType::Zst, false),
+            (FileType::Tarzst, false),
+            (FileType::Lz4, false),
+            (FileType::Tarlz4, false),
+            (FileType::Upx, true),
+        ] {
+            assert_eq!(
+                variant.is_executable_packer(),
+                expected,
+                "variant={:?}",
+                variant
+            );
+        }
+    }
 }

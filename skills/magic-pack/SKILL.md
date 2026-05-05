@@ -159,9 +159,14 @@ spellings are accepted by the MCP `file_type` arg):
 | `tar.xz` (`tarxz`) | — | yes | smallest archive of a directory |
 | `tar.zst` (`tarzst`) | — | yes | recommended modern default for directories |
 | `tar.lz4` (`tarlz4`) | — | yes | speed-first directory archive |
+| `upx` | yes (executable) | — | pack / unpack PE / ELF / Mach-O — see UPX gotchas |
 
 A "single-file" format wraps **exactly one file**. To compress a
 directory, pick the `tar.*` variant — see "Common gotchas" below.
+
+`upx` is special: it works only on executable binaries and shells out
+to the `upx` binary on PATH (no Rust crate). Detection is via header
+scan, not a single magic-byte prefix. See "UPX-specific gotchas" below.
 
 ## Output interpretation
 
@@ -217,6 +222,12 @@ to stderr and exit non-zero. The `-V` / `--version` flag and
    `level >= 2` (default is 5, so usually you can just call it
    without `level` and it does the right thing for up to 5 layers).
 7. **"What formats are supported?"** `supported_formats`.
+8. **"Identify / unpack a UPX-packed binary."** `detect_file_type`
+   first; if it returns `upx`, call `decompress`. Auto-detect handles
+   it. The output filename is `<stem>.<ext>` (with the `.upx` infix
+   stripped) or `<stem>.unpacked.<ext>` if there was no `.upx` infix
+   to strip. UPX **requires the `upx` binary on PATH** — the skill's
+   install step at the top of this file covers it.
 
 For deeper recipes covering specific scenarios, see `recipes.md` in
 this skill directory.
@@ -248,6 +259,28 @@ this skill directory.
 - **Codex vs Claude config.** Codex reads
   `~/.codex/config.toml` (TOML). Claude Desktop / Claude Code read
   JSON. Same binary, same env var — only the file format differs.
+
+### UPX-specific gotchas
+
+- **`upx` binary must be installed separately.** magic-pack shells out
+  to it; we don't bundle a packer. If the binary is missing the error
+  message lists per-platform install commands (`apt install upx-ucl`,
+  `brew install upx`, `pacman -S upx`, `scoop install upx`).
+- **macOS Mach-O code signing is hostile to UPX.** UPX 5.x rejects
+  packing macOS binaries by default (`CantPackException: macOS is
+  currently not supported`). Even with `--force-macos`, packed Mach-O
+  binaries on Apple Silicon often fail to execute under the hardened
+  runtime (`killed: 9`). For Mach-O work, prefer the unpacked output;
+  for actual packing, target Linux ELF or Windows PE.
+- **Compress filename convention is unusual.** `foo.exe` →
+  `foo.upx.exe` (extension preserved so the binary stays runnable).
+  Decompress strips the `.upx` infix back out, or appends
+  `.unpacked` if there's no infix to strip.
+- **Detection requires a real executable header plus ≥ 2 `UPX!`
+  markers.** A plain text file containing the literal `UPX!` will
+  not be misidentified.
+- **No timeout on the `upx` shell-out** in v1. A very large or
+  pathological binary could run for minutes; `Ctrl-C` aborts cleanly.
 
 ## Limitations
 

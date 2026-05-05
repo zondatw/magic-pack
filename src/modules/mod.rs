@@ -86,6 +86,10 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
         }
     }
 
+    if compression::upx::detect(&include_vec) {
+        return Ok(enums::FileType::Upx);
+    }
+
     Err(Error::from(ErrorKind::Unsupported))
 }
 
@@ -134,6 +138,9 @@ pub fn compress(
         enums::FileType::Tarlz4 => {
             compression::tar_lz4::compress(src_path, dst_path);
         }
+        enums::FileType::Upx => {
+            compression::upx::compress(src_path, dst_path);
+        }
     }
 }
 
@@ -181,6 +188,9 @@ pub fn decompress(
         }
         enums::FileType::Tarlz4 => {
             compression::tar_lz4::decompress(src_path, dst_path);
+        }
+        enums::FileType::Upx => {
+            compression::upx::decompress(src_path, dst_path);
         }
     }
 }
