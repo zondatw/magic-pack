@@ -8,6 +8,9 @@ pub enum FileType {
     Gz,
     Tarbz2,
     Targz,
+    // Canonical CLI token is `seven-z` (kebab-cased variant); `7z` is
+    // accepted as an alias so the CLI matches the MCP / README token.
+    #[value(alias = "7z")]
     SevenZ,
     Xz,
     Tarxz,

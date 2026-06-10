@@ -78,6 +78,7 @@ fn decompress_packed_fixture_byte_equals_original() {
         input: staged,
         output: dir.clone(),
         level: 5,
+        password: None,
     })
     .expect("decompress should succeed");
 
@@ -104,6 +105,7 @@ fn decompress_filename_with_no_upx_infix_gets_unpacked_suffix() {
         input: staged,
         output: dir.clone(),
         level: 5,
+        password: None,
     })
     .expect("decompress should succeed");
 
@@ -125,6 +127,7 @@ fn decompress_level_loop_stops_after_one_packer_iteration() {
         input: staged,
         output: dir.clone(),
         level: 100,
+        password: None,
     })
     .expect("decompress should succeed");
 
@@ -153,6 +156,7 @@ fn service_compress_then_decompress_roundtrips_byte_equal() {
         file_type: FileType::Upx,
         input: staged.clone(),
         output: pack_target.clone(),
+        password: None,
     })
     .expect("compress should succeed");
 
@@ -165,6 +169,7 @@ fn service_compress_then_decompress_roundtrips_byte_equal() {
         input: pack_result.output_path,
         output: unpack_dir.clone(),
         level: 5,
+        password: None,
     })
     .expect("decompress should succeed");
 

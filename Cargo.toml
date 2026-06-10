@@ -23,6 +23,7 @@ sevenz-rust = "0.6"
 xz2 = "0.1"
 zstd = "0.13"
 lz4_flex = { version = "0.11", features = ["frame"] }
+rpassword = { version = "7", optional = true }
 serde = { version = "=1.0.228", features = ["derive"], optional = true }
 serde_json = { version = "=1.0.149", optional = true }
 itoa = { version = "=1.0.17", optional = true }
@@ -33,6 +34,9 @@ zmij = { version = "=1.0.17", optional = true }
 [features]
 default = []
 mcp = ["dep:serde", "dep:serde_json", "dep:itoa", "dep:ryu", "dep:memchr", "dep:zmij"]
+# 7z AES-256 password support. Enables sevenz-rust's aes256 backend
+# (pulls in aes / cbc / rand) and rpassword for the no-echo CLI prompt.
+encryption = ["sevenz-rust/aes256", "dep:rpassword"]
 
 [lib]
 name = "magic_pack"

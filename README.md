@@ -161,7 +161,8 @@ Arguments:
 
 Options:
   -c, --compress
-  -f <FILE_TYPE>       [possible values: zip, tar, bz2, gz, tarbz2, targz, 7z, xz, tarxz, zst, tarzst, lz4, tarlz4, upx]
+  -f <FILE_TYPE>       [possible values: zip, tar, bz2, gz, tarbz2, targz, seven-z, xz, tarxz, zst, tarzst, lz4, tarlz4, upx]
+                       (`7z` is accepted as an alias for `seven-z`)
   -d, --decompress
   -l, --level <LEVEL>  [default: 5]
   -o <OUTPUT>          [default: .]
@@ -257,6 +258,30 @@ scoop install upx
 ```
 
 Note: UPX-packed Mach-O binaries on Apple Silicon may fail to execute under macOS code-signing; UPX 5.x requires `--force-macos` even to produce one. For Mach-O work, prefer Linux ELF or Windows PE targets.
+
+### 7z encryption (password)
+
+AES-256 password protection for the `7z` format is available in builds compiled with the `encryption` feature (content **and** filenames are encrypted):
+
+```shell
+cargo install magic-pack --features encryption
+# or, with the MCP server too:
+cargo install magic-pack --features "mcp encryption" --bin magic-pack-mcp
+```
+
+Usage — `-p` takes the password inline, or prompts (no echo) when given alone:
+
+```shell
+# Prompt interactively (recommended — keeps the password out of `ps` and shell history)
+./magic-pack -c -f 7z -p -o temp/secret.7z src
+./magic-pack -d -p -o temp/. temp/secret.7z
+
+# Inline (convenient, but the password is visible in `ps` / history)
+./magic-pack -c -f 7z -p "hunter2" -o temp/secret.7z src
+./magic-pack -d -p "hunter2" -o temp/. temp/secret.7z
+```
+
+Archives are standard AES-256 7z — `7z x -p<password>` and other tools interoperate. Decrypting without `-p` (or with the wrong password) fails with a clear error and never echoes the password. For the MCP server, pass a `password` string argument to the `compress` / `decompress` tools (only advertised in `encryption` builds).
 
 ## Reference
 

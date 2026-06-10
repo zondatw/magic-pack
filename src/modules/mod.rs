@@ -93,10 +93,21 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
     Err(Error::from(ErrorKind::Unsupported))
 }
 
+/// Backward-compatible entry point (no encryption). Equivalent to
+/// `compress_with_password(.., None)`.
 pub fn compress(
     file_type: enums::FileType,
     src_path: &std::path::Path,
     dst_path: &std::path::Path,
+) {
+    compress_with_password(file_type, src_path, dst_path, None);
+}
+
+pub fn compress_with_password(
+    file_type: enums::FileType,
+    src_path: &std::path::Path,
+    dst_path: &std::path::Path,
+    password: Option<&str>,
 ) {
     match file_type {
         enums::FileType::Zip => {
@@ -118,7 +129,7 @@ pub fn compress(
             compression::tar_gz::compress(src_path, dst_path);
         }
         enums::FileType::SevenZ => {
-            compression::sevenz::compress(src_path, dst_path);
+            compression::sevenz::compress(src_path, dst_path, password);
         }
         enums::FileType::Xz => {
             compression::xz::compress(src_path, dst_path);
@@ -144,10 +155,21 @@ pub fn compress(
     }
 }
 
+/// Backward-compatible entry point (no encryption). Equivalent to
+/// `decompress_with_password(.., None)`.
 pub fn decompress(
     file_type: enums::FileType,
     src_path: &std::path::Path,
     dst_path: &std::path::Path,
+) {
+    decompress_with_password(file_type, src_path, dst_path, None);
+}
+
+pub fn decompress_with_password(
+    file_type: enums::FileType,
+    src_path: &std::path::Path,
+    dst_path: &std::path::Path,
+    password: Option<&str>,
 ) {
     match file_type {
         enums::FileType::Zip => {
@@ -169,7 +191,7 @@ pub fn decompress(
             compression::gz::decompress(src_path, dst_path);
         }
         enums::FileType::SevenZ => {
-            compression::sevenz::decompress(src_path, dst_path);
+            compression::sevenz::decompress(src_path, dst_path, password);
         }
         enums::FileType::Xz => {
             compression::xz::decompress(src_path, dst_path);

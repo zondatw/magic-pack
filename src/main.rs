@@ -15,6 +15,7 @@ fn main() {
             file_type: args.file_type.unwrap(),
             input: args.input.clone(),
             output: args.output.clone(),
+            password: args.compress_password(),
         }) {
             Ok(result) => result,
             Err(err) => exit_with_error(err),
@@ -27,6 +28,7 @@ fn main() {
             input: args.input.clone(),
             output: args.output.clone(),
             level: args.level,
+            password: args.decompress_password(),
         }) {
             Ok(result) => result,
             Err(err) => exit_with_error(err),

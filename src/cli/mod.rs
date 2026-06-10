@@ -57,10 +57,74 @@ pub struct Args {
     // file / directory output path
     #[arg(short, default_value = ".")]
     pub output: path::PathBuf,
+
+    // 7z AES-256 password. `-p <value>` uses it inline; `-p` alone
+    // prompts interactively (no echo). Only present in encryption builds.
+    #[cfg(feature = "encryption")]
+    #[arg(short = 'p', long = "password", num_args = 0..=1, value_name = "PASSWORD")]
+    pub password: Option<Option<String>>,
 }
 
 impl Args {
     pub fn new() -> Self {
         Args::parse()
     }
+
+    /// Password to use when compressing (prompts with confirmation when
+    /// `-p` is given without a value). `None` in non-encryption builds.
+    #[cfg(feature = "encryption")]
+    pub fn compress_password(&self) -> Option<String> {
+        self.resolve_password(true)
+    }
+
+    #[cfg(not(feature = "encryption"))]
+    pub fn compress_password(&self) -> Option<String> {
+        None
+    }
+
+    /// Password to use when decompressing (single prompt when `-p` is
+    /// given without a value). `None` in non-encryption builds.
+    #[cfg(feature = "encryption")]
+    pub fn decompress_password(&self) -> Option<String> {
+        self.resolve_password(false)
+    }
+
+    #[cfg(not(feature = "encryption"))]
+    pub fn decompress_password(&self) -> Option<String> {
+        None
+    }
+
+    #[cfg(feature = "encryption")]
+    fn resolve_password(&self, confirm: bool) -> Option<String> {
+        match &self.password {
+            None => None,
+            Some(Some(inline)) => {
+                eprintln!(
+                    "warning: a password passed on the command line is visible in `ps` and \
+                     shell history; prefer `-p` alone to be prompted"
+                );
+                Some(inline.clone())
+            }
+            Some(None) => Some(prompt_password(confirm)),
+        }
+    }
+}
+
+#[cfg(feature = "encryption")]
+fn prompt_password(confirm: bool) -> String {
+    let pw = rpassword::prompt_password("Password: ").unwrap_or_else(|err| {
+        eprintln!("Error: failed to read password: {}", err);
+        std::process::exit(1);
+    });
+    if confirm {
+        let again = rpassword::prompt_password("Confirm password: ").unwrap_or_else(|err| {
+            eprintln!("Error: failed to read password: {}", err);
+            std::process::exit(1);
+        });
+        if pw != again {
+            eprintln!("Error: passwords do not match");
+            std::process::exit(1);
+        }
+    }
+    pw
 }

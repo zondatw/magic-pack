@@ -7,18 +7,46 @@ use std::path::{Path, PathBuf};
 use crate::contents::enums::{self, FileType};
 use crate::modules;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct CompressRequest {
     pub file_type: FileType,
     pub input: PathBuf,
     pub output: PathBuf,
+    /// 7z AES-256 password. `None` for unencrypted. Redacted in Debug.
+    pub password: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct DecompressRequest {
     pub input: PathBuf,
     pub output: PathBuf,
     pub level: i8,
+    /// 7z AES-256 password. `None` for unencrypted. Redacted in Debug.
+    pub password: Option<String>,
+}
+
+// Manual Debug impls keep the password out of any `{:?}` output so it
+// can never reach a log line or error message via formatting.
+impl fmt::Debug for CompressRequest {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("CompressRequest")
+            .field("file_type", &self.file_type)
+            .field("input", &self.input)
+            .field("output", &self.output)
+            .field("password", &self.password.as_ref().map(|_| "<redacted>"))
+            .finish()
+    }
+}
+
+impl fmt::Debug for DecompressRequest {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("DecompressRequest")
+            .field("input", &self.input)
+            .field("output", &self.output)
+            .field("level", &self.level)
+            .field("password", &self.password.as_ref().map(|_| "<redacted>"))
+            .finish()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -77,8 +105,14 @@ pub fn compress(req: CompressRequest) -> Result<OperationResult, MagicPackError>
         req.output.clone()
     };
 
+    let password = req.password.clone();
     run_operation("compress", || {
-        modules::compress(req.file_type, &req.input, &output_path);
+        modules::compress_with_password(
+            req.file_type,
+            &req.input,
+            &output_path,
+            password.as_deref(),
+        );
     })?;
 
     Ok(OperationResult {
@@ -126,8 +160,14 @@ pub fn decompress(req: DecompressRequest) -> Result<OperationResult, MagicPackEr
         };
 
         let current_output = decompress_output.clone();
+        let password = req.password.clone();
         run_operation("decompress", || {
-            modules::decompress(file_type, &decompress_input, &current_output);
+            modules::decompress_with_password(
+                file_type,
+                &decompress_input,
+                &current_output,
+                password.as_deref(),
+            );
         })?;
         decompress_input = current_output;
         let temp_filename = decompress_input.file_stem().ok_or_else(|| {
@@ -270,6 +310,7 @@ fn decompress_executable_packer(
     let dst_path = req.output.join(&dst_filename);
     let dst_clone = dst_path.clone();
     let input = req.input.clone();
+    // UPX takes no password; the plain (no-encryption) entry point.
     run_operation("decompress", move || {
         modules::decompress(file_type, &input, &dst_clone);
     })?;

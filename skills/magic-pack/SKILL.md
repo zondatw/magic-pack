@@ -148,7 +148,7 @@ spellings are accepted by the MCP `file_type` arg):
 |---|---|---|---|
 | `zip` | — | yes | cross-platform delivery, Windows-friendly |
 | `tar` | — | yes | uncompressed bundle (chain with another format) |
-| `7z` | — | yes | high compression, multi-file native |
+| `7z` | — | yes | high compression, multi-file native; AES-256 password (encryption build) |
 | `gz` | yes | — | classic single-file, ubiquitous |
 | `bz2` | yes | — | better ratio than gz, slow |
 | `xz` | yes | — | very high ratio, slow |
@@ -222,7 +222,13 @@ to stderr and exit non-zero. The `-V` / `--version` flag and
    `level >= 2` (default is 5, so usually you can just call it
    without `level` and it does the right thing for up to 5 layers).
 7. **"What formats are supported?"** `supported_formats`.
-8. **"Identify / unpack a UPX-packed binary."** `detect_file_type`
+8. **"Encrypt / password-protect this."** Use `7z` with a password.
+   CLI: `magic-pack -c -f 7z -p <pw> ...` (or `-p` alone to be
+   prompted). MCP: pass a `password` string arg to `compress`. Both
+   content and filenames are AES-256 encrypted. Requires an
+   `encryption`-feature build (see gotchas). To open one: `decompress`
+   with the same password.
+9. **"Identify / unpack a UPX-packed binary."** `detect_file_type`
    first; if it returns `upx`, call `decompress`. Auto-detect handles
    it. The output filename is `<stem>.<ext>` (with the `.upx` infix
    stripped) or `<stem>.unpacked.<ext>` if there was no `.upx` infix
@@ -259,6 +265,26 @@ this skill directory.
 - **Codex vs Claude config.** Codex reads
   `~/.codex/config.toml` (TOML). Claude Desktop / Claude Code read
   JSON. Same binary, same env var — only the file format differs.
+
+### 7z password (encryption) gotchas
+
+- **Only `7z` supports a password** (AES-256). Other formats ignore a
+  `password` argument entirely — there's no encrypted zip/gz/etc.
+- **Requires an `encryption`-feature build.** A default build neither
+  advertises the `password` MCP arg nor has the CLI `-p` flag. If a
+  password reaches a non-encryption build, you get a clear "rebuild
+  with --features encryption" error — not a silent unencrypted
+  archive. Install with `cargo install magic-pack --features "mcp
+  encryption"`.
+- **Both content and filenames are encrypted** (header encryption is
+  on). You can't even list an encrypted 7z without the password.
+- **Wrong / missing password** → a typed error ("wrong password" /
+  "archive is encrypted; provide a password"); the password is never
+  echoed back.
+- **CLI delivery**: `-p <value>` is inline (visible in `ps` / shell
+  history — the CLI prints a warning); `-p` alone prompts with no echo
+  (prefer this). MCP receives the password as a `password` JSON arg
+  over the local channel — never log it.
 
 ### UPX-specific gotchas
 
