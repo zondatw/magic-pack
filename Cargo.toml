@@ -23,6 +23,7 @@ sevenz-rust = "0.6"
 xz2 = "0.1"
 zstd = "0.13"
 lz4_flex = { version = "0.11", features = ["frame"] }
+indicatif = "0.17"
 rpassword = { version = "7", optional = true }
 serde = { version = "=1.0.228", features = ["derive"], optional = true }
 serde_json = { version = "=1.0.149", optional = true }
