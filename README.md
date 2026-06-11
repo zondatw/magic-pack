@@ -166,9 +166,18 @@ Options:
   -d, --decompress
   -l, --level <LEVEL>  [default: 5]
   -o <OUTPUT>          [default: .]
+  -p[<PASSWORD>]       7z AES-256 password; `-p` alone prompts (encryption build only)
+  -q, --quiet          suppress the progress bar and result summary
   -h, --help           Print help information
   -V, --version        Print version information
 ```
+
+While an operation runs, magic-pack shows an animated progress bar on
+`stderr`, then prints a one-line result summary (file count, sizes,
+compression ratio, elapsed time, and an `encrypted` note for password
+7z) on `stdout`. Pass `-q`/`--quiet` to silence both — useful in
+scripts and pipes (errors still go to `stderr`). Color on the `✓` is
+dropped automatically when output isn't a TTY or when `NO_COLOR` is set.
 
 ### Example
 

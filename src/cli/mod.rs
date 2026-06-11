@@ -25,9 +25,12 @@ pub mod report;
   magic-pack -d -o temp/. temp/temp.tar.bz2
   magic-pack -c -f targz -o temp/temp.tar.gz src
   magic-pack -d -o temp/. temp/temp.tar.gz
-  magic-pack -c -f seven-z -o temp/temp.7z src
+  magic-pack -c -f 7z -o temp/temp.7z src
   magic-pack -d -o temp/. temp/temp.7z
+  magic-pack -c -f 7z -p -o temp/secret.7z src   (7z password; prompts. needs --features encryption)
+  magic-pack -d -p -o temp/. temp/secret.7z      (decrypt; prompts for the password)
   magic-pack -d -l 3 -o temp/. temp/archive.tar.gz
+  magic-pack -d -q -o temp/. temp/temp.zip       (quiet: no progress bar / summary)
   magic-pack -d temp/temp.zip
 "
 )]

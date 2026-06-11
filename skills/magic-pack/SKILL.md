@@ -55,9 +55,10 @@ bytes — compress doesn't, so you must name the format up front.
 
 - **Streaming / pipe-mode compression** — magic-pack works on file
   paths only. Use `gzip`, `bzip2`, `zstd`, etc., directly when piping.
-- **Encryption at rest** — no password-protected zip, no age/gpg
-  integration. Use `age` or `gpg` for that, then archive the
-  ciphertext.
+- **Encryption beyond 7z** — only `7z` has a password (AES-256,
+  encryption build). There's no password-protected zip/gz and no
+  age/gpg integration; for those, use `age`/`gpg` first, then archive
+  the ciphertext.
 - **Incremental sync** — magic-pack creates / extracts archives
   whole. For "ship only what changed," use `rsync` or `restic`.
 - **Listing or partial extract** — magic-pack unpacks the whole
@@ -310,7 +311,8 @@ this skill directory.
 
 ## Limitations
 
-- No encryption (no zip passwords, no age / gpg integration).
+- No encryption except `7z` AES-256 password (encryption build) — no
+  zip/gz passwords, no age / gpg integration.
 - No streaming / pipe mode — paths only.
 - No archive listing or partial extract — extracts the whole thing.
 - No update-in-place (creating an archive overwrites; no incremental
