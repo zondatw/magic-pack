@@ -225,6 +225,47 @@ obfuscation pattern — the skill identifies the format honestly and
 hands off; what to do with the unpacked binary (run? sandbox?
 analyse?) is a downstream judgment call.
 
+## 7. Password-protect (encrypt) files
+
+**Trigger**: "Encrypt this", "password-protect this archive", "send
+this securely", "make a 7z with a password".
+
+**Strategy**: 7z with AES-256. Both file contents and the filename
+list are encrypted. Needs a magic-pack built with the `encryption`
+feature (`cargo install magic-pack --features "mcp encryption"`).
+
+```jsonc
+// Encrypt on compress — pass `password`.
+{ "name": "compress", "arguments": {
+    "input_path":  "/abs/work/reports",
+    "output_path": "/abs/work/reports.7z",
+    "file_type":   "7z",
+    "password":    "<user-supplied>"
+}}
+// → { "ok": true, "output_path": "/abs/work/reports.7z" }
+
+// Decrypt on decompress — same password.
+{ "name": "decompress", "arguments": {
+    "input_path":  "/abs/work/reports.7z",
+    "output_path": "/abs/work/out/",
+    "password":    "<user-supplied>"
+}}
+```
+
+**Read-out**: the resulting `.7z` interoperates with standard tools
+(`7z x -p<password>`). Decompressing without a password, or with the
+wrong one, returns `isError: true` with a clear message — and the
+message never contains the password.
+
+**Gotchas**:
+- If the MCP server wasn't built with `encryption`, the `password`
+  argument isn't advertised and using it errors with "rebuild with
+  --features encryption". Surface that to the user; don't fall back to
+  an unencrypted archive silently.
+- Only `7z` encrypts. A `password` on any other `file_type` is ignored
+  — if the user wants encryption, the format must be `7z`.
+- Never echo the password back in your summary to the user.
+
 ## Recipe selection
 
 When unsure which recipe a user query maps to:
@@ -237,5 +278,6 @@ When unsure which recipe a user query maps to:
 | "Not a directory" error / single-file vs dir | #4 |
 | "outside ALLOWED_ROOT" error / config issue | #5 |
 | UPX / packed exe / "is this binary packed" / executable packer | #6 |
+| encrypt / password / "protect this" / secure archive | #7 |
 | "what kind of file is this" | start with `detect_file_type`, no recipe needed |
 | "what formats do you support" | `supported_formats`, no recipe needed |

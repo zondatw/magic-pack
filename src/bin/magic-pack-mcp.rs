@@ -292,10 +292,12 @@ fn dispatch_tool(
             ensure_allowed_path(&input, state)?;
             ensure_allowed_path(&output, state)?;
 
+            let password = optional_password(arguments)?;
             let result = service::compress(CompressRequest {
                 file_type,
                 input,
                 output,
+                password,
             })
             .map_err(|err| ToolCallError::Tool(err.to_string()))?;
 
@@ -316,10 +318,12 @@ fn dispatch_tool(
             ensure_allowed_path(&input, state)?;
             ensure_allowed_path(&output, state)?;
 
+            let password = optional_password(arguments)?;
             let result = service::decompress(DecompressRequest {
                 input,
                 output,
                 level,
+                password,
             })
             .map_err(|err| ToolCallError::Tool(err.to_string()))?;
 
@@ -389,6 +393,20 @@ fn optional_i64(arguments: &Map<String, Value>, key: &str) -> Result<Option<i64>
     }
 }
 
+/// Reads the optional `password` argument (7z AES-256). Always parsed
+/// so a password is never silently dropped; if it reaches a build
+/// without the `encryption` feature, the 7z module raises a clear
+/// "rebuild with --features encryption" error rather than producing a
+/// surprise-unencrypted archive. Never echoed back to the client.
+fn optional_password(arguments: &Map<String, Value>) -> Result<Option<String>, ToolCallError> {
+    match arguments.get("password") {
+        Some(Value::String(value)) if value.is_empty() => Ok(None),
+        Some(Value::String(value)) => Ok(Some(value.clone())),
+        Some(Value::Null) | None => Ok(None),
+        Some(_) => Err(invalid_params("password must be a string")),
+    }
+}
+
 fn required_file_type(
     arguments: &Map<String, Value>,
     key: &str,
@@ -431,7 +449,8 @@ fn ensure_allowed_path(path: &Path, state: &ServerState) -> Result<(), ToolCallE
 }
 
 fn tool_definitions() -> Vec<Value> {
-    vec![
+    #[cfg_attr(not(feature = "encryption"), allow(unused_mut))]
+    let mut tools = vec![
         json!({
             "name": "compress",
             "description": "Compress a file or directory into a supported archive format.",
@@ -505,7 +524,38 @@ fn tool_definitions() -> Vec<Value> {
                 "additionalProperties": false
             }
         }),
-    ]
+    ];
+
+    // Only advertise the `password` argument when this build actually
+    // supports encryption. Added to both compress and decompress.
+    #[cfg(feature = "encryption")]
+    add_password_property(&mut tools);
+
+    tools
+}
+
+#[cfg(feature = "encryption")]
+fn add_password_property(tools: &mut [Value]) {
+    let property = json!({
+        "type": "string",
+        "description": "Optional 7z AES-256 password. Encrypts content and filenames on compress; required to read an encrypted 7z on decompress. Ignored by other formats."
+    });
+    for tool in tools.iter_mut() {
+        let is_target = matches!(
+            tool.get("name").and_then(Value::as_str),
+            Some("compress") | Some("decompress")
+        );
+        if !is_target {
+            continue;
+        }
+        if let Some(props) = tool
+            .get_mut("inputSchema")
+            .and_then(|s| s.get_mut("properties"))
+            .and_then(Value::as_object_mut)
+        {
+            props.insert("password".to_string(), property.clone());
+        }
+    }
 }
 
 fn file_type_name(file_type: FileType) -> &'static str {

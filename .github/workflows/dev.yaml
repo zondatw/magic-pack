@@ -23,3 +23,9 @@ jobs:
 
       - name: Test
         run: cargo test -- --nocapture
+
+      - name: Test (encryption)
+        run: cargo test --features encryption -- --nocapture
+
+      - name: Test (mcp + encryption)
+        run: cargo test --features "mcp encryption" -- --nocapture
