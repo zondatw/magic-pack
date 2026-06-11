@@ -3,6 +3,8 @@ use std::path;
 
 use magic_pack::contents::enums;
 
+pub mod report;
+
 #[derive(Parser)]
 #[command(
     author,
@@ -57,6 +59,11 @@ pub struct Args {
     // file / directory output path
     #[arg(short, default_value = ".")]
     pub output: path::PathBuf,
+
+    // suppress the progress bar and the result summary (errors still
+    // print to stderr); useful for scripts and pipes
+    #[arg(short = 'q', long = "quiet")]
+    pub quiet: bool,
 
     // 7z AES-256 password. `-p <value>` uses it inline; `-p` alone
     // prompts interactively (no echo). Only present in encryption builds.
