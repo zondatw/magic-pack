@@ -7,6 +7,7 @@ use tar;
 use tar::Archive;
 use walkdir::{DirEntry, WalkDir};
 
+use crate::modules::progress::{add, CountingReader, Progress};
 use crate::utils::is_safe_path;
 
 fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
@@ -25,8 +26,12 @@ fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
     }
 }
 
-fn tar_zst_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, dst_file: T, src_root: &Path)
-where
+fn tar_zst_dir<T>(
+    it: &mut dyn Iterator<Item = DirEntry>,
+    dst_file: T,
+    src_root: &Path,
+    progress: Progress,
+) where
     T: Write,
 {
     let enc = zstd::Encoder::new(dst_file, 0).expect("zst encoder failed");
@@ -37,22 +42,28 @@ where
         builder
             .append_path_with_name(path, &name)
             .expect("tar.zst append failed");
+        if entry.file_type().is_file() {
+            if let Ok(meta) = entry.metadata() {
+                add(progress, meta.len());
+            }
+        }
     }
     let enc = builder.into_inner().expect("tar.zst finish failed");
     enc.finish().expect("zst finish failed");
 }
 
-pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     let dst_file = File::create(dst_path).expect("tar.zst create failed");
     let walkdir = WalkDir::new(src_path);
     let it = walkdir.into_iter();
-    tar_zst_dir(&mut it.filter_map(|e| e.ok()), dst_file, src_path);
+    tar_zst_dir(&mut it.filter_map(|e| e.ok()), dst_file, src_path, progress);
 }
 
-pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     std::fs::create_dir_all(dst_path).expect("tar.zst create dst dir failed");
     let src_file = File::open(src_path).expect("tar.zst open failed");
-    let dec = zstd::Decoder::new(src_file).expect("zst decoder failed");
+    let dec =
+        zstd::Decoder::new(CountingReader::new(src_file, progress)).expect("zst decoder failed");
     let mut archive = Archive::new(dec);
     for entry in archive.entries().expect("tar.zst entries failed") {
         let mut entry = entry.expect("tar.zst entry failed");

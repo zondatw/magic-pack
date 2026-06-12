@@ -10,6 +10,7 @@ use tar;
 use tar::Archive;
 use walkdir::{DirEntry, WalkDir};
 
+use crate::modules::progress::{add, CountingReader, Progress};
 use crate::utils::is_safe_path;
 
 fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
@@ -28,8 +29,12 @@ fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
     }
 }
 
-fn tar_gz_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, tar_gz_file: T, src_root: &Path)
-where
+fn tar_gz_dir<T>(
+    it: &mut dyn Iterator<Item = DirEntry>,
+    tar_gz_file: T,
+    src_root: &Path,
+    progress: Progress,
+) where
     T: Write + Seek,
 {
     let enc = GzEncoder::new(tar_gz_file, flate2::Compression::default());
@@ -40,20 +45,30 @@ where
         tar_gz_builder
             .append_path_with_name(path, &name)
             .expect("tar.gz append failed");
+        if entry.file_type().is_file() {
+            if let Ok(meta) = entry.metadata() {
+                add(progress, meta.len());
+            }
+        }
     }
 }
 
-pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     let tar_gz_file = File::create(dst_path).expect("tar.gz create failed");
     let walkdir = WalkDir::new(src_path);
     let it = walkdir.into_iter();
-    tar_gz_dir(&mut it.filter_map(|e| e.ok()), tar_gz_file, src_path);
+    tar_gz_dir(
+        &mut it.filter_map(|e| e.ok()),
+        tar_gz_file,
+        src_path,
+        progress,
+    );
 }
 
-pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     std::fs::create_dir_all(dst_path).expect("tar.gz create dst dir failed");
     let tar_gz_file = File::open(src_path).expect("tar.gz open failed");
-    let dec = GzDecoder::new(tar_gz_file);
+    let dec = GzDecoder::new(CountingReader::new(tar_gz_file, progress));
     let mut archive = Archive::new(dec);
     for entry in archive.entries().expect("tar.gz entries failed") {
         let mut entry = entry.expect("tar.gz entry failed");

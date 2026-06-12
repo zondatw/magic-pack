@@ -58,11 +58,11 @@ fn encrypt_roundtrip_byte_equal() {
     let src_dir = prepare_src_dir(&root);
 
     let archive = root.join("out.7z");
-    modules::compress_with_password(FileType::SevenZ, &src_dir, &archive, Some(PASSWORD));
+    modules::compress_with_password(FileType::SevenZ, &src_dir, &archive, Some(PASSWORD), None);
 
     let unpack = root.join("unpack");
     fs::create_dir_all(&unpack).expect("create unpack dir");
-    modules::decompress_with_password(FileType::SevenZ, &archive, &unpack, Some(PASSWORD));
+    modules::decompress_with_password(FileType::SevenZ, &archive, &unpack, Some(PASSWORD), None);
 
     assert_eq!(
         fs::read_to_string(unpack.join("srcdir").join(SECRET_ENTRY)).expect("read secret"),
@@ -90,7 +90,7 @@ fn encrypted_header_hides_filenames() {
     let src_dir = prepare_src_dir(&root);
 
     let archive = root.join("out.7z");
-    modules::compress_with_password(FileType::SevenZ, &src_dir, &archive, Some(PASSWORD));
+    modules::compress_with_password(FileType::SevenZ, &src_dir, &archive, Some(PASSWORD), None);
 
     let bytes = fs::read(&archive).expect("read archive");
     let needle = SECRET_ENTRY.as_bytes();
@@ -121,7 +121,7 @@ fn wrong_password_fails_cleanly() {
     let root = make_unique_dir("enc_wrongpw");
     let src_dir = prepare_src_dir(&root);
     let archive = root.join("out.7z");
-    modules::compress_with_password(FileType::SevenZ, &src_dir, &archive, Some(PASSWORD));
+    modules::compress_with_password(FileType::SevenZ, &src_dir, &archive, Some(PASSWORD), None);
 
     let unpack = root.join("unpack");
     let result = service::decompress(DecompressRequest {
@@ -149,7 +149,7 @@ fn missing_password_on_encrypted_fails() {
     let root = make_unique_dir("enc_nopw");
     let src_dir = prepare_src_dir(&root);
     let archive = root.join("out.7z");
-    modules::compress_with_password(FileType::SevenZ, &src_dir, &archive, Some(PASSWORD));
+    modules::compress_with_password(FileType::SevenZ, &src_dir, &archive, Some(PASSWORD), None);
 
     let unpack = root.join("unpack");
     let result = service::decompress(DecompressRequest {

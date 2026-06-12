@@ -10,6 +10,7 @@ use tar;
 use tar::Archive;
 use walkdir::{DirEntry, WalkDir};
 
+use crate::modules::progress::{add, CountingReader, Progress};
 use crate::utils::is_safe_path;
 
 fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
@@ -28,8 +29,12 @@ fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
     }
 }
 
-fn tar_bz2_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, tar_bz2_file: T, src_root: &Path)
-where
+fn tar_bz2_dir<T>(
+    it: &mut dyn Iterator<Item = DirEntry>,
+    tar_bz2_file: T,
+    src_root: &Path,
+    progress: Progress,
+) where
     T: Write + Seek,
 {
     let enc = BzEncoder::new(tar_bz2_file, bzip2::Compression::default());
@@ -39,20 +44,30 @@ where
         tar_bz2_builder
             .append_path_with_name(path, archive_path(src_root, path))
             .expect("tar.bz2 append failed");
+        if entry.file_type().is_file() {
+            if let Ok(meta) = entry.metadata() {
+                add(progress, meta.len());
+            }
+        }
     }
 }
 
-pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     let tar_bz2_file = File::create(dst_path).expect("tar.bz2 create failed");
     let walkdir = WalkDir::new(src_path);
     let it = walkdir.into_iter();
-    tar_bz2_dir(&mut it.filter_map(|e| e.ok()), tar_bz2_file, src_path);
+    tar_bz2_dir(
+        &mut it.filter_map(|e| e.ok()),
+        tar_bz2_file,
+        src_path,
+        progress,
+    );
 }
 
-pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     std::fs::create_dir_all(dst_path).expect("tar.bz2 create dst dir failed");
     let tar_bz2_file = File::open(src_path).expect("tar.bz2 open failed");
-    let dec = BzDecoder::new(tar_bz2_file);
+    let dec = BzDecoder::new(CountingReader::new(tar_bz2_file, progress));
     let mut archive = Archive::new(dec);
     for entry in archive.entries().expect("tar.bz2 entries failed") {
         let mut entry = entry.expect("tar.bz2 entry failed");

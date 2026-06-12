@@ -8,6 +8,7 @@ use walkdir::{DirEntry, WalkDir};
 use tar;
 use tar::Archive;
 
+use crate::modules::progress::{add, CountingReader, Progress};
 use crate::utils::is_safe_path;
 
 fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
@@ -26,8 +27,12 @@ fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
     }
 }
 
-fn tar_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, tar_file: T, src_root: &Path)
-where
+fn tar_dir<T>(
+    it: &mut dyn Iterator<Item = DirEntry>,
+    tar_file: T,
+    src_root: &Path,
+    progress: Progress,
+) where
     T: Write + Seek,
 {
     let mut tar_builder = tar::Builder::new(tar_file);
@@ -37,20 +42,25 @@ where
         tar_builder
             .append_path_with_name(path, &name)
             .expect("tar append failed");
+        if entry.file_type().is_file() {
+            if let Ok(meta) = entry.metadata() {
+                add(progress, meta.len());
+            }
+        }
     }
 }
 
-pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     let tar_file = File::create(dst_path).expect("tar create failed");
     let walkdir = WalkDir::new(src_path);
     let it = walkdir.into_iter();
-    tar_dir(&mut it.filter_map(|e| e.ok()), tar_file, src_path);
+    tar_dir(&mut it.filter_map(|e| e.ok()), tar_file, src_path, progress);
 }
 
-pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     std::fs::create_dir_all(dst_path).expect("tar create dst dir failed");
     let tar_file = File::open(src_path).expect("tar open failed");
-    let mut archive = Archive::new(tar_file);
+    let mut archive = Archive::new(CountingReader::new(tar_file, progress));
     for entry in archive.entries().expect("tar entries failed") {
         let mut entry = entry.expect("tar entry failed");
         let entry_path = entry.path().expect("tar entry path failed");

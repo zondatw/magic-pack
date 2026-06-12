@@ -10,6 +10,8 @@ use walkdir::{DirEntry, WalkDir};
 use zip;
 use zip::write::FileOptions;
 
+use crate::modules::progress::{add, Progress};
+
 fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
     let base: Option<OsString> = src_root.file_name().map(|s| s.to_os_string());
     if entry_path == src_root {
@@ -31,6 +33,7 @@ fn zip_dir<T>(
     writer: T,
     method: zip::CompressionMethod,
     src_root: &Path,
+    progress: Progress,
 ) -> zip::result::ZipResult<()>
 where
     T: Write + Seek,
@@ -53,6 +56,7 @@ where
             f.read_to_end(&mut buffer)
                 .expect("zip read compressing-file failed");
             zip.write_all(&buffer).expect("zip compress file failed");
+            add(progress, buffer.len() as u64);
             buffer.clear();
         } else if !path.as_os_str().is_empty() {
             zip.add_directory(name.to_string_lossy().into_owned(), options)
@@ -63,7 +67,7 @@ where
     Result::Ok(())
 }
 
-pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     let zip_file = File::create(dst_path).expect("zip create failed");
     let walkdir = WalkDir::new(src_path);
     let it = walkdir.into_iter();
@@ -72,6 +76,7 @@ pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
         zip_file,
         zip::CompressionMethod::Stored,
         src_path,
+        progress,
     )
     .expect("zip compress dir failed");
 }

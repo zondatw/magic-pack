@@ -172,12 +172,18 @@ Options:
   -V, --version        Print version information
 ```
 
-While an operation runs, magic-pack shows an animated progress bar on
-`stderr`, then prints a one-line result summary (file count, sizes,
-compression ratio, elapsed time, and an `encrypted` note for password
-7z) on `stdout`. Pass `-q`/`--quiet` to silence both — useful in
-scripts and pipes (errors still go to `stderr`). Color on the `✓` is
-dropped automatically when output isn't a TTY or when `NO_COLOR` is set.
+While an operation runs, magic-pack shows live progress on `stderr`. For
+large operations (≥ 8 MB) on the streaming formats — the single-file
+codecs (`gz`/`bz2`/`xz`/`zst`/`lz4`), the `tar.*` variants, and `zip`
+compression — it's a **filling bar** with percentage, bytes, and ETA
+(`[####----] 58% · 4.1/7.0 MB · ETA 3s`). Smaller operations and the
+opaque formats (`7z`, `upx`, zip decompression) show an indeterminate
+spinner instead. On completion it prints a one-line result summary
+(file count, sizes, compression ratio, elapsed time, and an `encrypted`
+note for password 7z) on `stdout`. Pass `-q`/`--quiet` to silence both —
+useful in scripts and pipes (errors still go to `stderr`). Color and the
+bar are dropped automatically when output isn't a TTY or when `NO_COLOR`
+is set.
 
 ### Example
 

@@ -7,6 +7,7 @@ use tar;
 use tar::Archive;
 use walkdir::{DirEntry, WalkDir};
 
+use crate::modules::progress::{add, CountingReader, Progress};
 use crate::utils::is_safe_path;
 
 fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
@@ -25,8 +26,12 @@ fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
     }
 }
 
-fn tar_lz4_dir<T>(it: &mut dyn Iterator<Item = DirEntry>, dst_file: T, src_root: &Path)
-where
+fn tar_lz4_dir<T>(
+    it: &mut dyn Iterator<Item = DirEntry>,
+    dst_file: T,
+    src_root: &Path,
+    progress: Progress,
+) where
     T: Write,
 {
     let enc = lz4_flex::frame::FrameEncoder::new(dst_file);
@@ -37,22 +42,27 @@ where
         builder
             .append_path_with_name(path, &name)
             .expect("tar.lz4 append failed");
+        if entry.file_type().is_file() {
+            if let Ok(meta) = entry.metadata() {
+                add(progress, meta.len());
+            }
+        }
     }
     let enc = builder.into_inner().expect("tar.lz4 finish failed");
     enc.finish().expect("lz4 finish failed");
 }
 
-pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     let dst_file = File::create(dst_path).expect("tar.lz4 create failed");
     let walkdir = WalkDir::new(src_path);
     let it = walkdir.into_iter();
-    tar_lz4_dir(&mut it.filter_map(|e| e.ok()), dst_file, src_path);
+    tar_lz4_dir(&mut it.filter_map(|e| e.ok()), dst_file, src_path, progress);
 }
 
-pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
+pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     std::fs::create_dir_all(dst_path).expect("tar.lz4 create dst dir failed");
     let src_file = File::open(src_path).expect("tar.lz4 open failed");
-    let dec = lz4_flex::frame::FrameDecoder::new(src_file);
+    let dec = lz4_flex::frame::FrameDecoder::new(CountingReader::new(src_file, progress));
     let mut archive = Archive::new(dec);
     for entry in archive.entries().expect("tar.lz4 entries failed") {
         let mut entry = entry.expect("tar.lz4 entry failed");

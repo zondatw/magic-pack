@@ -5,10 +5,78 @@
 
 use std::io::{IsTerminal, Write};
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Arc;
+use std::thread;
 use std::time::Duration;
 
 use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
 use walkdir::WalkDir;
+
+/// Operations whose total byte size is at least this get a determinate
+/// filling bar; smaller ones keep the spinner (a bar would just flash).
+pub const PROGRESS_BAR_MIN_BYTES: u64 = 8 * 1024 * 1024;
+
+/// Run `op` while showing progress on stderr, returning its result.
+///
+/// - `determinate` + `total > 0` → a filling `%`/bytes/ETA bar driven by
+///   a shared counter handed to `op` (the codecs increment it).
+/// - otherwise → the indeterminate spinner ([`start_progress`]).
+/// - `quiet` → no UI at all.
+///
+/// The bar/spinner is always cleared before returning, even on error, so
+/// no half-drawn line survives.
+pub fn with_progress<F, T>(
+    verb: &str,
+    input: &Path,
+    total: u64,
+    determinate: bool,
+    quiet: bool,
+    op: F,
+) -> T
+where
+    F: FnOnce(Option<Arc<AtomicU64>>) -> T,
+{
+    if quiet {
+        return op(None);
+    }
+    if !(determinate && total > 0) {
+        let pb = start_progress(verb, input, false);
+        let result = op(None);
+        finish_progress(&pb);
+        return result;
+    }
+
+    let pb = ProgressBar::new(total);
+    pb.set_draw_target(ProgressDrawTarget::stderr());
+    if let Ok(style) = ProgressStyle::with_template(
+        "{spinner:.cyan} {msg} [{bar:25.cyan/blue}] {percent:>3}% · \
+         {decimal_bytes}/{decimal_total_bytes} · ETA {eta}",
+    ) {
+        pb.set_style(style.progress_chars("##-"));
+    }
+    pb.set_message(format!("{} {}", verb, input.display()));
+    pb.enable_steady_tick(Duration::from_millis(80));
+
+    // The codecs run synchronously on this thread; a tiny poller thread
+    // mirrors the shared counter onto the bar position until we stop it.
+    let counter = Arc::new(AtomicU64::new(0));
+    let stop = Arc::new(AtomicBool::new(false));
+    let (pb_poll, counter_poll, stop_poll) = (pb.clone(), counter.clone(), stop.clone());
+    let handle = thread::spawn(move || {
+        while !stop_poll.load(Ordering::Relaxed) {
+            pb_poll.set_position(counter_poll.load(Ordering::Relaxed));
+            thread::sleep(Duration::from_millis(80));
+        }
+    });
+
+    let result = op(Some(counter.clone()));
+
+    stop.store(true, Ordering::Relaxed);
+    let _ = handle.join();
+    pb.finish_and_clear();
+    result
+}
 
 /// Start an animated spinner on stderr for the running operation.
 /// Returns a handle the caller clears with [`finish_progress`]. When

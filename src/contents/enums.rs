@@ -29,6 +29,21 @@ impl FileType {
     pub fn is_executable_packer(self) -> bool {
         matches!(self, FileType::Upx)
     }
+
+    /// Whether the compress path reports byte progress (so the CLI can
+    /// show a determinate bar instead of a spinner). Single-file codecs,
+    /// tar variants, and zip are instrumented; 7z (opaque `sevenz-rust`)
+    /// and UPX (external process) are not.
+    pub fn reports_compress_progress(self) -> bool {
+        !matches!(self, FileType::SevenZ | FileType::Upx)
+    }
+
+    /// Whether the decompress path reports byte progress. Same as
+    /// compress, minus zip — its archive is read with random access, so
+    /// input-byte progress is meaningless.
+    pub fn reports_decompress_progress(self) -> bool {
+        !matches!(self, FileType::Zip | FileType::SevenZ | FileType::Upx)
+    }
 }
 
 pub fn get_file_type_string(file_type: FileType) -> &'static str {
