@@ -278,6 +278,11 @@ cargo install magic-pack --features encryption
 cargo install magic-pack --features "mcp encryption" --bin magic-pack-mcp
 ```
 
+> **Note:** the prebuilt distributions — the `.deb`, the AUR `magic-pack-bin`
+> package, and the GitHub release binaries — are built with default features
+> and **do not** include encryption (no `-p` flag, no MCP `password` arg). Use
+> `cargo install … --features encryption` or build from source to get it.
+
 Usage — `-p` takes the password inline, or prompts (no echo) when given alone:
 
 ```shell

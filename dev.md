@@ -25,8 +25,8 @@ In docker:
 ```shell
 apt update && apt install -y wget sudo
 
-wget https://github.com/zondatw/magic-pack/releases/download/v0.11.1/magic-pack_0.11.1-1_arm64.deb
-sudo apt install ./magic-pack_0.11.1_arm64.deb -y
+wget https://github.com/zondatw/magic-pack/releases/download/v0.12.0/magic-pack_0.12.0-1_arm64.deb
+sudo apt install ./magic-pack_0.12.0-1_arm64.deb -y
 
 magic-pack --version
 ```

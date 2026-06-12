@@ -56,7 +56,7 @@ required-features = ["mcp"]
 maintainer = "Zonda Yang <u226699@gmail.com>"
 copyright = "2023, Zonda Yang <u226699@gmail.com>"
 license-file = ["LICENSE", "4"]
-extended-description = "A CLI tool for compressing and decompressing files with multiple formats including gz, bz2, xz, zst, lz4, zip, 7z, and tar variants."
+extended-description = "A CLI tool for compressing and decompressing files across many formats (gz, bz2, xz, zst, lz4, zip, 7z, and tar variants) plus UPX executable detection and pack/unpack. Optional AES-256 password protection for 7z is available in source builds compiled with the `encryption` feature (not included in this package)."
 depends = "libc6 (>= 2.17), libgcc-s1"
 section = "utils"
 priority = "optional"
