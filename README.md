@@ -166,9 +166,18 @@ Options:
   -d, --decompress
   -l, --level <LEVEL>  [default: 5]
   -o <OUTPUT>          [default: .]
+  -p[<PASSWORD>]       7z AES-256 password; `-p` alone prompts (encryption build only)
+  -q, --quiet          suppress the progress bar and result summary
   -h, --help           Print help information
   -V, --version        Print version information
 ```
+
+While an operation runs, magic-pack shows an animated progress bar on
+`stderr`, then prints a one-line result summary (file count, sizes,
+compression ratio, elapsed time, and an `encrypted` note for password
+7z) on `stdout`. Pass `-q`/`--quiet` to silence both — useful in
+scripts and pipes (errors still go to `stderr`). Color on the `✓` is
+dropped automatically when output isn't a TTY or when `NO_COLOR` is set.
 
 ### Example
 
@@ -268,6 +277,11 @@ cargo install magic-pack --features encryption
 # or, with the MCP server too:
 cargo install magic-pack --features "mcp encryption" --bin magic-pack-mcp
 ```
+
+> **Note:** the prebuilt distributions — the `.deb`, the AUR `magic-pack-bin`
+> package, and the GitHub release binaries — are built with default features
+> and **do not** include encryption (no `-p` flag, no MCP `password` arg). Use
+> `cargo install … --features encryption` or build from source to get it.
 
 Usage — `-p` takes the password inline, or prompts (no echo) when given alone:
 

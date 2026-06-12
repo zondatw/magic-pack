@@ -2,7 +2,7 @@
 pkgname=magic-pack-bin
 pkgver=0.11.1
 pkgrel=1
-pkgdesc="A CLI tool for compressing and decompressing files with multiple formats (pre-built binary)"
+pkgdesc="A CLI tool to compress, decompress, and detect many archive formats plus UPX executables (pre-built binary)"
 arch=('x86_64' 'aarch64')
 url="https://github.com/zondatw/magic-pack"
 license=('MIT')

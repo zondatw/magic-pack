@@ -3,19 +3,25 @@ name: magic-pack
 description: |
   Compresses and decompresses files across 13 archive formats: zip, tar,
   bz2, gz, tar.bz2, tar.gz, 7z, xz, tar.xz, zst, tar.zst, lz4, tar.lz4.
+  Also detects, packs, and unpacks UPX executables, and password-protects
+  7z archives with AES-256 (encrypting both contents and filenames).
   Auto-detects archive type via magic bytes on decompress. Activates
   when the user asks to compress, decompress, extract, unpack, unzip,
-  archive, package, or bundle a directory; identify "what kind of
-  archive is X"; or work with tar.gz, gzip, bzip2, 7-zip, xz, zstd,
-  lz4, or nested archives. Provides an MCP server (`magic-pack-mcp`,
-  preferred for agents — structured JSON output) and a CLI binary
-  (`magic-pack`).
+  archive, package, or bundle a directory; encrypt, password-protect, or
+  securely send a file, or make a password-protected 7z; unpack a
+  UPX-packed executable or check whether a binary is packed; identify
+  "what kind of archive is X"; or work with tar.gz, gzip, bzip2, 7-zip,
+  xz, zstd, lz4, or nested archives. Provides an MCP server
+  (`magic-pack-mcp`, preferred for agents — structured JSON output) and
+  a CLI binary (`magic-pack`).
 when_to_use: |
   Trigger on phrases like: zip / unzip, tar / untar, gzip / gunzip,
   compress, decompress, pack, unpack, extract, archive a folder,
-  bundle this directory, "what is foo.bin", magic-byte detection,
-  nested archive, "tar.gz inside a tar", multi-layer extract, list
-  the supported archive formats.
+  bundle this directory, encrypt / password-protect / "make a password
+  7z" / "send this securely", UPX / "unpack this packed exe" / "is this
+  binary packed", "what is foo.bin", magic-byte detection, nested
+  archive, "tar.gz inside a tar", multi-layer extract, list the
+  supported archive formats.
 allowed-tools: ["Bash", "Read"]
 ---
 
@@ -55,9 +61,10 @@ bytes — compress doesn't, so you must name the format up front.
 
 - **Streaming / pipe-mode compression** — magic-pack works on file
   paths only. Use `gzip`, `bzip2`, `zstd`, etc., directly when piping.
-- **Encryption at rest** — no password-protected zip, no age/gpg
-  integration. Use `age` or `gpg` for that, then archive the
-  ciphertext.
+- **Encryption beyond 7z** — only `7z` has a password (AES-256,
+  encryption build). There's no password-protected zip/gz and no
+  age/gpg integration; for those, use `age`/`gpg` first, then archive
+  the ciphertext.
 - **Incremental sync** — magic-pack creates / extracts archives
   whole. For "ship only what changed," use `rsync` or `restic`.
 - **Listing or partial extract** — magic-pack unpacks the whole
@@ -310,7 +317,8 @@ this skill directory.
 
 ## Limitations
 
-- No encryption (no zip passwords, no age / gpg integration).
+- No encryption except `7z` AES-256 password (encryption build) — no
+  zip/gz passwords, no age / gpg integration.
 - No streaming / pipe mode — paths only.
 - No archive listing or partial extract — extracts the whole thing.
 - No update-in-place (creating an archive overwrites; no incremental
