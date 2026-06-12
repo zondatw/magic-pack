@@ -1,9 +1,11 @@
 mod compression;
+pub mod progress;
 
 use std::fs::File;
 use std::io::{Error, ErrorKind, Read, Seek};
 
 use crate::contents::enums;
+use crate::modules::progress::Progress;
 
 fn find_subsequence(source: &[u8], target: &[u8]) -> Option<usize> {
     source
@@ -93,14 +95,13 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
     Err(Error::from(ErrorKind::Unsupported))
 }
 
-/// Backward-compatible entry point (no encryption). Equivalent to
-/// `compress_with_password(.., None)`.
+/// Backward-compatible entry point (no encryption, no progress).
 pub fn compress(
     file_type: enums::FileType,
     src_path: &std::path::Path,
     dst_path: &std::path::Path,
 ) {
-    compress_with_password(file_type, src_path, dst_path, None);
+    compress_with_password(file_type, src_path, dst_path, None, None);
 }
 
 pub fn compress_with_password(
@@ -108,46 +109,47 @@ pub fn compress_with_password(
     src_path: &std::path::Path,
     dst_path: &std::path::Path,
     password: Option<&str>,
+    progress: Progress,
 ) {
     match file_type {
         enums::FileType::Zip => {
-            compression::zip::compress(src_path, dst_path);
+            compression::zip::compress(src_path, dst_path, progress);
         }
         enums::FileType::Tar => {
-            compression::tar::compress(src_path, dst_path);
+            compression::tar::compress(src_path, dst_path, progress);
         }
         enums::FileType::Bz2 => {
-            compression::bz2::compress(src_path, dst_path);
+            compression::bz2::compress(src_path, dst_path, progress);
         }
         enums::FileType::Gz => {
-            compression::gz::compress(src_path, dst_path);
+            compression::gz::compress(src_path, dst_path, progress);
         }
         enums::FileType::Tarbz2 => {
-            compression::tar_bz2::compress(src_path, dst_path);
+            compression::tar_bz2::compress(src_path, dst_path, progress);
         }
         enums::FileType::Targz => {
-            compression::tar_gz::compress(src_path, dst_path);
+            compression::tar_gz::compress(src_path, dst_path, progress);
         }
         enums::FileType::SevenZ => {
             compression::sevenz::compress(src_path, dst_path, password);
         }
         enums::FileType::Xz => {
-            compression::xz::compress(src_path, dst_path);
+            compression::xz::compress(src_path, dst_path, progress);
         }
         enums::FileType::Tarxz => {
-            compression::tar_xz::compress(src_path, dst_path);
+            compression::tar_xz::compress(src_path, dst_path, progress);
         }
         enums::FileType::Zst => {
-            compression::zst::compress(src_path, dst_path);
+            compression::zst::compress(src_path, dst_path, progress);
         }
         enums::FileType::Tarzst => {
-            compression::tar_zst::compress(src_path, dst_path);
+            compression::tar_zst::compress(src_path, dst_path, progress);
         }
         enums::FileType::Lz4 => {
-            compression::lz4::compress(src_path, dst_path);
+            compression::lz4::compress(src_path, dst_path, progress);
         }
         enums::FileType::Tarlz4 => {
-            compression::tar_lz4::compress(src_path, dst_path);
+            compression::tar_lz4::compress(src_path, dst_path, progress);
         }
         enums::FileType::Upx => {
             compression::upx::compress(src_path, dst_path);
@@ -155,14 +157,13 @@ pub fn compress_with_password(
     }
 }
 
-/// Backward-compatible entry point (no encryption). Equivalent to
-/// `decompress_with_password(.., None)`.
+/// Backward-compatible entry point (no encryption, no progress).
 pub fn decompress(
     file_type: enums::FileType,
     src_path: &std::path::Path,
     dst_path: &std::path::Path,
 ) {
-    decompress_with_password(file_type, src_path, dst_path, None);
+    decompress_with_password(file_type, src_path, dst_path, None, None);
 }
 
 pub fn decompress_with_password(
@@ -170,46 +171,47 @@ pub fn decompress_with_password(
     src_path: &std::path::Path,
     dst_path: &std::path::Path,
     password: Option<&str>,
+    progress: Progress,
 ) {
     match file_type {
         enums::FileType::Zip => {
             compression::zip::decompress(src_path, dst_path);
         }
         enums::FileType::Tar => {
-            compression::tar::decompress(src_path, dst_path);
+            compression::tar::decompress(src_path, dst_path, progress);
         }
         enums::FileType::Tarbz2 => {
-            compression::tar_bz2::decompress(src_path, dst_path);
+            compression::tar_bz2::decompress(src_path, dst_path, progress);
         }
         enums::FileType::Targz => {
-            compression::tar_gz::decompress(src_path, dst_path);
+            compression::tar_gz::decompress(src_path, dst_path, progress);
         }
         enums::FileType::Bz2 => {
-            compression::bz2::decompress(src_path, dst_path);
+            compression::bz2::decompress(src_path, dst_path, progress);
         }
         enums::FileType::Gz => {
-            compression::gz::decompress(src_path, dst_path);
+            compression::gz::decompress(src_path, dst_path, progress);
         }
         enums::FileType::SevenZ => {
             compression::sevenz::decompress(src_path, dst_path, password);
         }
         enums::FileType::Xz => {
-            compression::xz::decompress(src_path, dst_path);
+            compression::xz::decompress(src_path, dst_path, progress);
         }
         enums::FileType::Tarxz => {
-            compression::tar_xz::decompress(src_path, dst_path);
+            compression::tar_xz::decompress(src_path, dst_path, progress);
         }
         enums::FileType::Zst => {
-            compression::zst::decompress(src_path, dst_path);
+            compression::zst::decompress(src_path, dst_path, progress);
         }
         enums::FileType::Tarzst => {
-            compression::tar_zst::decompress(src_path, dst_path);
+            compression::tar_zst::decompress(src_path, dst_path, progress);
         }
         enums::FileType::Lz4 => {
-            compression::lz4::decompress(src_path, dst_path);
+            compression::lz4::decompress(src_path, dst_path, progress);
         }
         enums::FileType::Tarlz4 => {
-            compression::tar_lz4::decompress(src_path, dst_path);
+            compression::tar_lz4::decompress(src_path, dst_path, progress);
         }
         enums::FileType::Upx => {
             compression::upx::decompress(src_path, dst_path);

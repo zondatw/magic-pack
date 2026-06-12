@@ -1,29 +1,24 @@
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io;
 
 use bzip2;
 use bzip2::read::BzDecoder;
 use bzip2::write::BzEncoder;
 
-pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
-    let bz2_file = File::create(dst_path).expect("bz2 create failed");
-    let mut enc = BzEncoder::new(bz2_file, bzip2::Compression::default());
+use crate::modules::progress::{CountingReader, Progress};
 
-    let mut src_file = File::open(src_path).expect("bz2 open failed");
-    let mut content = Vec::new();
-    src_file.read_to_end(&mut content).expect("bz2 open failed");
-    enc.write_all(content.as_slice()).expect("bz2 open failed");
-    enc.finish().expect("bz2 open failed");
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
+    let dst = File::create(dst_path).expect("bz2 create failed");
+    let mut enc = BzEncoder::new(dst, bzip2::Compression::default());
+    let src = File::open(src_path).expect("bz2 open failed");
+    let mut reader = CountingReader::new(src, progress);
+    io::copy(&mut reader, &mut enc).expect("bz2 compress failed");
+    enc.finish().expect("bz2 finish failed");
 }
 
-pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
-    let bz2_file = File::open(src_path).expect("bz2 open failed");
-    let dec = BzDecoder::new(bz2_file);
-    let mut reader = std::io::BufReader::new(dec);
-    let mut content = Vec::new();
-    reader.read_to_end(&mut content).expect("bz2 unpack failed");
-    let mut dst_file = File::create(dst_path).expect("bz2 unpack failed");
-    dst_file
-        .write_all(content.as_slice())
-        .expect("bz2 unpack failed");
+pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
+    let src = File::open(src_path).expect("bz2 open failed");
+    let mut dec = BzDecoder::new(CountingReader::new(src, progress));
+    let mut dst = File::create(dst_path).expect("bz2 unpack failed");
+    io::copy(&mut dec, &mut dst).expect("bz2 unpack failed");
 }

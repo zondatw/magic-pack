@@ -3,6 +3,8 @@ use std::fs;
 use std::io::ErrorKind;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::AtomicU64;
+use std::sync::Arc;
 
 use crate::contents::enums::{self, FileType};
 use crate::modules;
@@ -97,6 +99,15 @@ pub fn detect_file_type(path: &Path) -> Result<FileType, MagicPackError> {
 }
 
 pub fn compress(req: CompressRequest) -> Result<OperationResult, MagicPackError> {
+    compress_with_progress(req, None)
+}
+
+/// Like [`compress`], but increments `progress` (a shared byte counter)
+/// as input is consumed so the CLI can draw a progress bar.
+pub fn compress_with_progress(
+    req: CompressRequest,
+    progress: Option<Arc<AtomicU64>>,
+) -> Result<OperationResult, MagicPackError> {
     validate_compress_request(&req)?;
 
     let output_path = if req.output == Path::new(".") {
@@ -112,6 +123,7 @@ pub fn compress(req: CompressRequest) -> Result<OperationResult, MagicPackError>
             &req.input,
             &output_path,
             password.as_deref(),
+            progress.as_deref(),
         );
     })?;
 
@@ -125,6 +137,16 @@ pub fn compress(req: CompressRequest) -> Result<OperationResult, MagicPackError>
 }
 
 pub fn decompress(req: DecompressRequest) -> Result<OperationResult, MagicPackError> {
+    decompress_with_progress(req, None)
+}
+
+/// Like [`decompress`], but increments `progress` (a shared byte
+/// counter) as the archive is consumed so the CLI can draw a bar. The
+/// counter tracks the outermost layer for nested archives.
+pub fn decompress_with_progress(
+    req: DecompressRequest,
+    progress: Option<Arc<AtomicU64>>,
+) -> Result<OperationResult, MagicPackError> {
     validate_decompress_request(&req)?;
 
     if req.output != Path::new(".") {
@@ -161,12 +183,14 @@ pub fn decompress(req: DecompressRequest) -> Result<OperationResult, MagicPackEr
 
         let current_output = decompress_output.clone();
         let password = req.password.clone();
+        let progress_ref = progress.as_deref();
         run_operation("decompress", || {
             modules::decompress_with_password(
                 file_type,
                 &decompress_input,
                 &current_output,
                 password.as_deref(),
+                progress_ref,
             );
         })?;
         decompress_input = current_output;

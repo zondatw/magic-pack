@@ -1,29 +1,24 @@
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io;
 
 use flate2;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 
-pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path) {
-    let gz_file = File::create(dst_path).expect("gz create failed");
-    let mut enc = GzEncoder::new(gz_file, flate2::Compression::default());
+use crate::modules::progress::{CountingReader, Progress};
 
-    let mut src_file = File::open(src_path).expect("gz open failed");
-    let mut content = Vec::new();
-    src_file.read_to_end(&mut content).expect("gz open failed");
-    enc.write_all(content.as_slice()).expect("gz open failed");
-    enc.finish().expect("gz open failed");
+pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
+    let dst = File::create(dst_path).expect("gz create failed");
+    let mut enc = GzEncoder::new(dst, flate2::Compression::default());
+    let src = File::open(src_path).expect("gz open failed");
+    let mut reader = CountingReader::new(src, progress);
+    io::copy(&mut reader, &mut enc).expect("gz compress failed");
+    enc.finish().expect("gz finish failed");
 }
 
-pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path) {
-    let gz_file = File::open(src_path).expect("gz open failed");
-    let dec = GzDecoder::new(gz_file);
-    let mut reader = std::io::BufReader::new(dec);
-    let mut content = Vec::new();
-    reader.read_to_end(&mut content).expect("gz unpack failed");
-    let mut dst_file = File::create(dst_path).expect("gz unpack failed");
-    dst_file
-        .write_all(content.as_slice())
-        .expect("gz unpack failed");
+pub fn decompress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
+    let src = File::open(src_path).expect("gz open failed");
+    let mut dec = GzDecoder::new(CountingReader::new(src, progress));
+    let mut dst = File::create(dst_path).expect("gz unpack failed");
+    io::copy(&mut dec, &mut dst).expect("gz unpack failed");
 }
