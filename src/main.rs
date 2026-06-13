@@ -92,6 +92,15 @@ fn main() {
         };
         report::print_decompress_summary(&args.input, &result.output_path, elapsed, args.quiet);
     }
+
+    if args.list {
+        let result = match service::list(&args.input) {
+            Ok(result) => result,
+            Err(err) => exit_with_error(err),
+        };
+        let file_type = magic_pack::contents::enums::get_file_type_string(result.file_type);
+        report::print_listing(&args.input, file_type, &result.entries, args.quiet);
+    }
 }
 
 fn exit_with_error(err: service::MagicPackError) -> ! {

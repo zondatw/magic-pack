@@ -98,6 +98,30 @@ pub fn detect_file_type(path: &Path) -> Result<FileType, MagicPackError> {
     modules::get_file_type(&path.to_path_buf()).map_err(MagicPackError::from)
 }
 
+/// One member of an archive, re-exported for callers building listings.
+pub use crate::modules::list::ArchiveEntry;
+
+#[derive(Debug, Clone)]
+pub struct ListResult {
+    pub file_type: FileType,
+    pub entries: Vec<ArchiveEntry>,
+}
+
+/// List an archive's contents without extracting. Auto-detects the
+/// format like `decompress`.
+pub fn list(input: &Path) -> Result<ListResult, MagicPackError> {
+    if !input.exists() {
+        return Err(MagicPackError::InvalidInput(format!(
+            "input path does not exist: {}",
+            input.display()
+        )));
+    }
+    let detected = detect_file_type(input)?;
+    let (file_type, entries) =
+        modules::list::list(detected, input).map_err(MagicPackError::from)?;
+    Ok(ListResult { file_type, entries })
+}
+
 pub fn compress(req: CompressRequest) -> Result<OperationResult, MagicPackError> {
     compress_with_progress(req, None)
 }

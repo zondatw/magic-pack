@@ -154,7 +154,7 @@ After installation the agent automatically discovers the skill via its `descript
 ```shell
 Magic pack tool
 
-Usage: magic-pack [OPTIONS] <--compress|--decompress> <INPUT>
+Usage: magic-pack [OPTIONS] <--compress|--decompress|--list> <INPUT>
 
 Arguments:
   <INPUT>
@@ -164,6 +164,7 @@ Options:
   -f <FILE_TYPE>       [possible values: zip, tar, bz2, gz, tarbz2, targz, seven-z, xz, tarxz, zst, tarzst, lz4, tarlz4, upx]
                        (`7z` is accepted as an alias for `seven-z`)
   -d, --decompress
+  -t, --list           list archive contents without extracting (auto-detects format)
   -l, --level <LEVEL>  [default: 5]
   -o <OUTPUT>          [default: .]
   -p[<PASSWORD>]       7z AES-256 password; `-p` alone prompts (encryption build only)
@@ -171,6 +172,13 @@ Options:
   -h, --help           Print help information
   -V, --version        Print version information
 ```
+
+`-t`/`--list` prints a sized table of the archive's members **without
+extracting** (reads headers only). It auto-detects the format; a
+`.tar.gz`-family file lists the inner tar's files. `7z` and `zip` are
+listed natively; single-file codecs (`gz`/`bz2`/`xz`/`zst`/`lz4`) report
+the one wrapped stream. With `-q` it prints just the entry names, one per
+line (pipe-friendly: `magic-pack -t -q a.zip | grep ...`).
 
 While an operation runs, magic-pack shows live progress on `stderr`. For
 large operations (≥ 8 MB) on the streaming formats — the single-file
@@ -252,6 +260,10 @@ is set.
 
 // output to current directory
 ./magic-pack -d temp/temp.zip
+
+// list contents without extracting (auto-detects format)
+./magic-pack -t temp/temp.tar.gz
+./magic-pack -t -q temp/temp.zip    // names only, one per line (pipe-friendly)
 ```
 
 ### UPX dependency

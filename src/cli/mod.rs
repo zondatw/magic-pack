@@ -32,12 +32,13 @@ pub mod report;
   magic-pack -d -l 3 -o temp/. temp/archive.tar.gz
   magic-pack -d -q -o temp/. temp/temp.zip       (quiet: no progress bar / summary)
   magic-pack -d temp/temp.zip
+  magic-pack -t temp/temp.tar.gz                 (list contents without extracting)
 "
 )]
 #[command(group(
     ArgGroup::new("functional")
         .required(true)
-        .args(["compress", "decompress"]),
+        .args(["compress", "decompress", "list"]),
 ))]
 pub struct Args {
     // Compress flag
@@ -51,6 +52,10 @@ pub struct Args {
     // Decompress flag
     #[arg(short, long)]
     pub decompress: bool,
+
+    // List archive contents without extracting (auto-detects format)
+    #[arg(short = 't', long = "list")]
+    pub list: bool,
 
     // decompress level
     #[arg(short, long, default_value = "5")]

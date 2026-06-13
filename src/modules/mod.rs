@@ -1,4 +1,5 @@
 mod compression;
+pub mod list;
 pub mod progress;
 
 use std::fs::File;
