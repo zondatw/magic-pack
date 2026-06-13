@@ -1,6 +1,6 @@
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::{Seek, Write};
+use std::io::{self, Read, Seek, Write};
 use std::path::{Path, PathBuf};
 
 use walkdir::{DirEntry, WalkDir};
@@ -8,8 +8,32 @@ use walkdir::{DirEntry, WalkDir};
 use tar;
 use tar::Archive;
 
+use super::ArchiveEntry;
 use crate::modules::progress::{add, CountingReader, Progress};
 use crate::utils::is_safe_path;
+
+/// List tar entry headers from an already-decompressed reader, without
+/// unpacking to disk. Shared by `tar` and every `tar.*` variant.
+pub(super) fn list_reader<R: Read>(reader: R) -> io::Result<Vec<ArchiveEntry>> {
+    let mut archive = Archive::new(reader);
+    let mut entries = Vec::new();
+    for entry in archive.entries()? {
+        let entry = entry?;
+        let header = entry.header();
+        let size = header.size().unwrap_or(0);
+        let is_dir = header.entry_type().is_dir();
+        let name = entry
+            .path()
+            .map(|p| p.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        entries.push(ArchiveEntry { name, size, is_dir });
+    }
+    Ok(entries)
+}
+
+pub fn list(src_path: &Path) -> io::Result<Vec<ArchiveEntry>> {
+    list_reader(File::open(src_path)?)
+}
 
 fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
     let base: Option<OsString> = src_root.file_name().map(|s| s.to_os_string());

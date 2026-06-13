@@ -1,14 +1,19 @@
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::Write;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
 use tar;
 use tar::Archive;
 use walkdir::{DirEntry, WalkDir};
 
+use super::ArchiveEntry;
 use crate::modules::progress::{add, CountingReader, Progress};
 use crate::utils::is_safe_path;
+
+pub fn list(src_path: &Path) -> io::Result<Vec<ArchiveEntry>> {
+    super::tar::list_reader(lz4_flex::frame::FrameDecoder::new(File::open(src_path)?))
+}
 
 fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
     let base: Option<OsString> = src_root.file_name().map(|s| s.to_os_string());

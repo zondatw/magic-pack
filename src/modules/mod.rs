@@ -1,12 +1,14 @@
 mod compression;
-pub mod list;
 pub mod progress;
 
 use std::fs::File;
-use std::io::{Error, ErrorKind, Read, Seek};
+use std::io::{self, Error, ErrorKind, Read, Seek};
 
 use crate::contents::enums;
 use crate::modules::progress::Progress;
+
+/// One member of an archive (see [`list`]).
+pub use compression::ArchiveEntry;
 
 fn find_subsequence(source: &[u8], target: &[u8]) -> Option<usize> {
     source
@@ -94,6 +96,32 @@ pub fn get_file_type(file_path: &std::path::PathBuf) -> Result<enums::FileType, 
     }
 
     Err(Error::from(ErrorKind::Unsupported))
+}
+
+/// List an archive's contents without extracting. Dispatches to each
+/// codec's own `list`; returns the *effective* type (a single-file
+/// codec wrapping a tar reports the matching `tar.*` variant).
+pub fn list(
+    file_type: enums::FileType,
+    src_path: &std::path::Path,
+) -> io::Result<(enums::FileType, Vec<ArchiveEntry>)> {
+    use enums::FileType as F;
+    match file_type {
+        F::Zip => Ok((file_type, compression::zip::list(src_path)?)),
+        F::Tar => Ok((file_type, compression::tar::list(src_path)?)),
+        F::Targz => Ok((file_type, compression::tar_gz::list(src_path)?)),
+        F::Tarbz2 => Ok((file_type, compression::tar_bz2::list(src_path)?)),
+        F::Tarxz => Ok((file_type, compression::tar_xz::list(src_path)?)),
+        F::Tarzst => Ok((file_type, compression::tar_zst::list(src_path)?)),
+        F::Tarlz4 => Ok((file_type, compression::tar_lz4::list(src_path)?)),
+        F::SevenZ => Ok((file_type, compression::sevenz::list(src_path)?)),
+        F::Gz => compression::gz::list(src_path),
+        F::Bz2 => compression::bz2::list(src_path),
+        F::Xz => compression::xz::list(src_path),
+        F::Zst => compression::zst::list(src_path),
+        F::Lz4 => compression::lz4::list(src_path),
+        F::Upx => Ok((file_type, compression::upx::list(src_path)?)),
+    }
 }
 
 /// Backward-compatible entry point (no encryption, no progress).

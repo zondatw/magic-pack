@@ -7,9 +7,19 @@
 //! UPX `UPX!` marker.
 
 use std::ffi::{OsStr, OsString};
-use std::io::ErrorKind;
+use std::io::{self, ErrorKind};
 use std::path::Path;
 use std::process::Command;
+
+use super::ArchiveEntry;
+
+/// UPX is an executable packer, not an archive — there's nothing to
+/// list. Surface a clear error.
+pub fn list(_src_path: &Path) -> io::Result<Vec<ArchiveEntry>> {
+    Err(io::Error::other(
+        "UPX is an executable packer, not an archive; use -d to unpack it",
+    ))
+}
 
 const UPX_MARKER: &[u8] = b"UPX!";
 /// Section names UPX writes into PE binaries; they're a corroborating

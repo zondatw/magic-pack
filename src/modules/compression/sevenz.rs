@@ -1,9 +1,29 @@
 use std::ffi::OsString;
 use std::fs::File;
+use std::io;
 use std::path::{Path, PathBuf};
 
 use sevenz_rust::{SevenZArchiveEntry, SevenZWriter};
 use walkdir::WalkDir;
+
+use super::ArchiveEntry;
+
+/// List 7z entries from headers only (`Archive::open` reads the header,
+/// no decompression). Encrypted-header archives need a password and
+/// error here — a documented follow-up.
+pub fn list(src_path: &Path) -> io::Result<Vec<ArchiveEntry>> {
+    let archive =
+        sevenz_rust::Archive::open(src_path).map_err(|e| io::Error::other(e.to_string()))?;
+    Ok(archive
+        .files
+        .iter()
+        .map(|e| ArchiveEntry {
+            name: e.name().to_string(),
+            size: e.size(),
+            is_dir: e.is_directory(),
+        })
+        .collect())
+}
 
 fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
     let base: Option<OsString> = src_root.file_name().map(|s| s.to_os_string());
