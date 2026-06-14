@@ -1,7 +1,15 @@
 use std::fs::File;
 use std::io;
 
+use super::ArchiveEntry;
+use crate::contents::enums::FileType;
 use crate::modules::progress::{CountingReader, Progress};
+
+pub fn list(src_path: &std::path::Path) -> io::Result<(FileType, Vec<ArchiveEntry>)> {
+    super::list_single_or_tar(src_path, FileType::Zst, FileType::Tarzst, || {
+        zstd::Decoder::new(File::open(src_path)?)
+    })
+}
 
 pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     let dst = File::create(dst_path).expect("zst create failed");

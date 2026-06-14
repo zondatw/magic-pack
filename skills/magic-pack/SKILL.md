@@ -20,8 +20,9 @@ when_to_use: |
   bundle this directory, encrypt / password-protect / "make a password
   7z" / "send this securely", UPX / "unpack this packed exe" / "is this
   binary packed", "what is foo.bin", magic-byte detection, nested
-  archive, "tar.gz inside a tar", multi-layer extract, list the
-  supported archive formats.
+  archive, "tar.gz inside a tar", multi-layer extract, "what's inside
+  this archive" / list / show / inspect contents without extracting,
+  list the supported archive formats.
 allowed-tools: ["Bash", "Read"]
 ---
 
@@ -144,7 +145,8 @@ If neither is available, surface the install command above and stop.
 | MCP tool | CLI flag(s) | Required args | Optional args | Returns |
 |---|---|---|---|---|
 | `compress` | `-c -f <fmt> -o <out> <input>` | `input_path`, `file_type` | `output_path` (default `.`) | `{ ok, message, output_path }` |
-| `decompress` | `-d -o <out> <input>` (`-l N` for nested) | `input_path` | `output_path` (default `.`), `level` (default 5) | `{ ok, message, output_path }` |
+| `decompress` | `-d -o <out> <input>` (`--level N` for nested) | `input_path` | `output_path` (default `.`), `level` (default 5) | `{ ok, message, output_path }` |
+| `list_archive` | `-l <input>` (`-l -q` = names only) | `input_path` | — | `{ ok, file_type, entries:[{name,size,is_dir}], entry_count, file_count, total_size }` |
 | `detect_file_type` | (no CLI equivalent — read magic bytes manually) | `input_path` | — | `{ ok, file_type }` |
 | `supported_formats` | `magic-pack --help` | — | — | `{ ok, formats: [...] }` |
 
@@ -224,7 +226,12 @@ to stderr and exit non-zero. The `-V` / `--version` flag and
 4. **"Extract `foo.bin` / unknown extension."** Call
    `detect_file_type` first. If recognized, call `decompress`. If
    not, the file isn't a magic-pack-supported archive.
-5. **"What kind of archive is this?"** `detect_file_type`.
+5. **"What's inside this archive?" / "list / show contents / what
+   files are in it" (without extracting).** Call `list_archive` — it
+   reads headers only, returns every entry with name/size/is_dir, and
+   reports the effective type (a `.tar.gz` lists the inner tar). This
+   is the safe way to inspect an untrusted archive before unpacking.
+6. **"What kind of archive is this?"** `detect_file_type`.
 6. **"Unpack the nested layers."** `decompress` with
    `level >= 2` (default is 5, so usually you can just call it
    without `level` and it does the right thing for up to 5 layers).

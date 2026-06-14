@@ -9,7 +9,7 @@ All examples assume the MCP server is wired up and
 fallback the mapping is:
 
 - `compress`        →  `magic-pack -c -f <fmt> -o <out> <input>`
-- `decompress`      →  `magic-pack -d [-l N] -o <out> <input>`
+- `decompress`      →  `magic-pack -d [--level N] -o <out> <input>`
 - `detect_file_type` → no direct CLI; use `file <path>` or open the
   archive with the matching tool.
 - `supported_formats` → `magic-pack --help` (the `-f` enum lists them).
@@ -266,6 +266,35 @@ message never contains the password.
   — if the user wants encryption, the format must be `7z`.
 - Never echo the password back in your summary to the user.
 
+## 8. List contents without extracting
+
+**Trigger**: "What's inside this archive?", "show me the files in
+`x.tar.gz`", "does this zip contain a `.env`?", or any time you want to
+inspect an **untrusted** archive before unpacking it.
+
+**Strategy**: `list_archive` reads only the headers — nothing is written
+to disk. Use it to vet an archive, find a specific entry, or report
+contents to the user.
+
+```jsonc
+{ "name": "list_archive", "arguments": { "input_path": "/abs/path/to/x.tar.gz" } }
+// → { "ok": true, "file_type": "tar.gz",
+//     "entries": [ { "name": "src/a.txt", "size": 12, "is_dir": false }, ... ],
+//     "entry_count": 5, "file_count": 3, "total_size": 5019 }
+```
+
+**Read-out**: `file_type` is the *effective* type — a `.tar.gz`-family
+file reports `tar.gz` and lists the inner tar's members (not just "one
+gz stream"). `7z` and `zip` are listed natively. Single-file codecs
+(`gz`/`bz2`/`xz`/`zst`/`lz4`) that don't wrap a tar return one entry for
+the wrapped stream (size `0`, unknown up front). CLI: `magic-pack -l
+<file>` for a table, `-l -q` for bare names (one per line).
+
+**Safety angle**: this is the right first step for an archive from an
+unknown source — inspect the entry names/sizes (watch for absolute
+paths, `..`, or a decompression bomb implied by huge `total_size`)
+before deciding to `decompress`.
+
 ## Recipe selection
 
 When unsure which recipe a user query maps to:
@@ -279,5 +308,6 @@ When unsure which recipe a user query maps to:
 | "outside ALLOWED_ROOT" error / config issue | #5 |
 | UPX / packed exe / "is this binary packed" / executable packer | #6 |
 | encrypt / password / "protect this" / secure archive | #7 |
+| "what's inside" / list / show contents / inspect without extracting | #8 |
 | "what kind of file is this" | start with `detect_file_type`, no recipe needed |
 | "what formats do you support" | `supported_formats`, no recipe needed |

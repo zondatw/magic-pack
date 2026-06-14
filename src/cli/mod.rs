@@ -29,15 +29,16 @@ pub mod report;
   magic-pack -d -o temp/. temp/temp.7z
   magic-pack -c -f 7z -p -o temp/secret.7z src   (7z password; prompts. needs --features encryption)
   magic-pack -d -p -o temp/. temp/secret.7z      (decrypt; prompts for the password)
-  magic-pack -d -l 3 -o temp/. temp/archive.tar.gz
+  magic-pack -d --level 3 -o temp/. temp/archive.tar.gz
   magic-pack -d -q -o temp/. temp/temp.zip       (quiet: no progress bar / summary)
   magic-pack -d temp/temp.zip
+  magic-pack -l temp/temp.tar.gz                 (list contents without extracting)
 "
 )]
 #[command(group(
     ArgGroup::new("functional")
         .required(true)
-        .args(["compress", "decompress"]),
+        .args(["compress", "decompress", "list"]),
 ))]
 pub struct Args {
     // Compress flag
@@ -52,8 +53,13 @@ pub struct Args {
     #[arg(short, long)]
     pub decompress: bool,
 
-    // decompress level
-    #[arg(short, long, default_value = "5")]
+    // List archive contents without extracting (auto-detects format)
+    #[arg(short = 'l', long = "list")]
+    pub list: bool,
+
+    // decompress nesting depth — uncommon, so long-form only (frees
+    // up `-l` for the more-used `--list`)
+    #[arg(long, default_value = "5")]
     pub level: i8,
 
     // file / directory input path

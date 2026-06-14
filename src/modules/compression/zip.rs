@@ -10,7 +10,26 @@ use walkdir::{DirEntry, WalkDir};
 use zip;
 use zip::write::FileOptions;
 
+use crate::modules::compression::ArchiveEntry;
 use crate::modules::progress::{add, Progress};
+
+pub fn list(src_path: &Path) -> io::Result<Vec<ArchiveEntry>> {
+    let file = File::open(src_path)?;
+    let mut archive =
+        zip::ZipArchive::new(BufReader::new(file)).map_err(|e| io::Error::other(e.to_string()))?;
+    let mut entries = Vec::with_capacity(archive.len());
+    for i in 0..archive.len() {
+        let entry = archive
+            .by_index(i)
+            .map_err(|e| io::Error::other(e.to_string()))?;
+        entries.push(ArchiveEntry {
+            name: entry.name().to_string(),
+            size: entry.size(),
+            is_dir: entry.is_dir(),
+        });
+    }
+    Ok(entries)
+}
 
 fn archive_path(src_root: &Path, entry_path: &Path) -> PathBuf {
     let base: Option<OsString> = src_root.file_name().map(|s| s.to_os_string());

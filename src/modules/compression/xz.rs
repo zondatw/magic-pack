@@ -4,7 +4,15 @@ use std::io;
 use xz2::read::XzDecoder;
 use xz2::write::XzEncoder;
 
+use super::ArchiveEntry;
+use crate::contents::enums::FileType;
 use crate::modules::progress::{CountingReader, Progress};
+
+pub fn list(src_path: &std::path::Path) -> io::Result<(FileType, Vec<ArchiveEntry>)> {
+    super::list_single_or_tar(src_path, FileType::Xz, FileType::Tarxz, || {
+        Ok(XzDecoder::new(File::open(src_path)?))
+    })
+}
 
 pub fn compress(src_path: &std::path::Path, dst_path: &std::path::Path, progress: Progress) {
     let dst = File::create(dst_path).expect("xz create failed");

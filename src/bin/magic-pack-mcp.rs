@@ -346,6 +346,36 @@ fn dispatch_tool(
             })
             .to_string())
         }
+        "list_archive" => {
+            let input = required_path(arguments, "input_path", state)?;
+            ensure_allowed_path(&input, state)?;
+            let result =
+                service::list(&input).map_err(|err| ToolCallError::Tool(err.to_string()))?;
+
+            let entries: Vec<Value> = result
+                .entries
+                .iter()
+                .map(|e| {
+                    json!({
+                        "name": e.name,
+                        "size": e.size,
+                        "is_dir": e.is_dir,
+                    })
+                })
+                .collect();
+            let total_size: u64 = result.entries.iter().map(|e| e.size).sum();
+            let file_count = result.entries.iter().filter(|e| !e.is_dir).count();
+
+            Ok(json!({
+                "ok": true,
+                "file_type": file_type_name(result.file_type),
+                "entries": entries,
+                "entry_count": result.entries.len(),
+                "file_count": file_count,
+                "total_size": total_size
+            })
+            .to_string())
+        }
         "supported_formats" => Ok(json!({
             "ok": true,
             "formats": service::supported_formats()
@@ -509,6 +539,21 @@ fn tool_definitions() -> Vec<Value> {
                     "input_path": {
                         "type": "string",
                         "description": "Archive file to inspect."
+                    }
+                },
+                "required": ["input_path"],
+                "additionalProperties": false
+            }
+        }),
+        json!({
+            "name": "list_archive",
+            "description": "List an archive's contents WITHOUT extracting (reads headers only). Works for zip, tar.* and 7z; a .tar.gz family file lists the inner tar's members. Returns entries with name, size, and is_dir.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "input_path": {
+                        "type": "string",
+                        "description": "Archive file to list."
                     }
                 },
                 "required": ["input_path"],

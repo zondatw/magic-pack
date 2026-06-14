@@ -154,7 +154,7 @@ After installation the agent automatically discovers the skill via its `descript
 ```shell
 Magic pack tool
 
-Usage: magic-pack [OPTIONS] <--compress|--decompress> <INPUT>
+Usage: magic-pack [OPTIONS] <--compress|--decompress|--list> <INPUT>
 
 Arguments:
   <INPUT>
@@ -164,13 +164,21 @@ Options:
   -f <FILE_TYPE>       [possible values: zip, tar, bz2, gz, tarbz2, targz, seven-z, xz, tarxz, zst, tarzst, lz4, tarlz4, upx]
                        (`7z` is accepted as an alias for `seven-z`)
   -d, --decompress
-  -l, --level <LEVEL>  [default: 5]
+  -l, --list           list archive contents without extracting (auto-detects format)
+      --level <LEVEL>  decompress nesting depth [default: 5] (long form only)
   -o <OUTPUT>          [default: .]
   -p[<PASSWORD>]       7z AES-256 password; `-p` alone prompts (encryption build only)
   -q, --quiet          suppress the progress bar and result summary
   -h, --help           Print help information
   -V, --version        Print version information
 ```
+
+`-l`/`--list` prints a sized table of the archive's members **without
+extracting** (reads headers only). It auto-detects the format; a
+`.tar.gz`-family file lists the inner tar's files. `7z` and `zip` are
+listed natively; single-file codecs (`gz`/`bz2`/`xz`/`zst`/`lz4`) report
+the one wrapped stream. With `-q` it prints just the entry names, one per
+line (pipe-friendly: `magic-pack -l -q a.zip | grep ...`).
 
 While an operation runs, magic-pack shows live progress on `stderr`. For
 large operations (≥ 8 MB) on the streaming formats — the single-file
@@ -248,10 +256,14 @@ is set.
 ./magic-pack -d -o temp/. temp/temp.tar.gz
 
 // nested archives (decompress multiple layers)
-./magic-pack -d -l 3 -o temp/. temp/archive.tar.gz
+./magic-pack -d --level 3 -o temp/. temp/archive.tar.gz
 
 // output to current directory
 ./magic-pack -d temp/temp.zip
+
+// list contents without extracting (auto-detects format)
+./magic-pack -l temp/temp.tar.gz
+./magic-pack -l -q temp/temp.zip    // names only, one per line (pipe-friendly)
 ```
 
 ### UPX dependency

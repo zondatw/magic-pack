@@ -11,6 +11,7 @@ use std::thread;
 use std::time::Duration;
 
 use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
+use magic_pack::service::ArchiveEntry;
 use walkdir::WalkDir;
 
 /// Operations whose total byte size is at least this get a determinate
@@ -101,6 +102,59 @@ pub fn start_progress(verb: &str, input: &Path, quiet: bool) -> ProgressBar {
 /// Clear the spinner line. Safe to call on a hidden/finished bar.
 pub fn finish_progress(pb: &ProgressBar) {
     pb.finish_and_clear();
+}
+
+/// Render an entry's display name, marking directories with a trailing `/`.
+fn entry_display_name(entry: &ArchiveEntry) -> String {
+    if entry.is_dir && !entry.name.ends_with('/') {
+        format!("{}/", entry.name)
+    } else {
+        entry.name.clone()
+    }
+}
+
+/// Print an archive listing to stdout. In `quiet` mode prints only the
+/// entry names, one per line (pipe-friendly); otherwise a sized table
+/// with a header and footer summary.
+pub fn print_listing(input: &Path, file_type: &str, entries: &[ArchiveEntry], quiet: bool) {
+    if quiet {
+        for entry in entries {
+            println!("{}", entry_display_name(entry));
+        }
+        return;
+    }
+
+    let total: u64 = entries.iter().map(|e| e.size).sum();
+    let file_count = entries.iter().filter(|e| !e.is_dir).count();
+    let dir_count = entries.len() - file_count;
+
+    println!("{}  ({})", input.display(), file_type);
+    for entry in entries {
+        let size = if entry.is_dir {
+            "—".to_string()
+        } else {
+            format_bytes(entry.size)
+        };
+        println!("  {:>10}  {}", size, entry_display_name(entry));
+    }
+    let mut footer = format!(
+        "{} {} · {}",
+        success_glyph(),
+        plural(file_count, "file", "files"),
+        format_bytes(total)
+    );
+    if dir_count > 0 {
+        footer.push_str(&format!(" · {}", plural(dir_count, "dir", "dirs")));
+    }
+    println!("{}", footer);
+}
+
+fn plural(n: usize, one: &str, many: &str) -> String {
+    if n == 1 {
+        format!("1 {}", one)
+    } else {
+        format!("{} {}", n, many)
+    }
 }
 
 /// `✓` in green when stdout is a TTY and `NO_COLOR` is unset; plain
