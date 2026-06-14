@@ -9,7 +9,7 @@ All examples assume the MCP server is wired up and
 fallback the mapping is:
 
 - `compress`        →  `magic-pack -c -f <fmt> -o <out> <input>`
-- `decompress`      →  `magic-pack -d [-l N] -o <out> <input>`
+- `decompress`      →  `magic-pack -d [--level N] -o <out> <input>`
 - `detect_file_type` → no direct CLI; use `file <path>` or open the
   archive with the matching tool.
 - `supported_formats` → `magic-pack --help` (the `-f` enum lists them).
@@ -287,8 +287,8 @@ contents to the user.
 file reports `tar.gz` and lists the inner tar's members (not just "one
 gz stream"). `7z` and `zip` are listed natively. Single-file codecs
 (`gz`/`bz2`/`xz`/`zst`/`lz4`) that don't wrap a tar return one entry for
-the wrapped stream (size `0`, unknown up front). CLI: `magic-pack -t
-<file>` for a table, `-t -q` for bare names (one per line).
+the wrapped stream (size `0`, unknown up front). CLI: `magic-pack -l
+<file>` for a table, `-l -q` for bare names (one per line).
 
 **Safety angle**: this is the right first step for an archive from an
 unknown source — inspect the entry names/sizes (watch for absolute

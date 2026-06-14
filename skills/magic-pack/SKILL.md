@@ -145,8 +145,8 @@ If neither is available, surface the install command above and stop.
 | MCP tool | CLI flag(s) | Required args | Optional args | Returns |
 |---|---|---|---|---|
 | `compress` | `-c -f <fmt> -o <out> <input>` | `input_path`, `file_type` | `output_path` (default `.`) | `{ ok, message, output_path }` |
-| `decompress` | `-d -o <out> <input>` (`-l N` for nested) | `input_path` | `output_path` (default `.`), `level` (default 5) | `{ ok, message, output_path }` |
-| `list_archive` | `-t <input>` (`-t -q` = names only) | `input_path` | — | `{ ok, file_type, entries:[{name,size,is_dir}], entry_count, file_count, total_size }` |
+| `decompress` | `-d -o <out> <input>` (`--level N` for nested) | `input_path` | `output_path` (default `.`), `level` (default 5) | `{ ok, message, output_path }` |
+| `list_archive` | `-l <input>` (`-l -q` = names only) | `input_path` | — | `{ ok, file_type, entries:[{name,size,is_dir}], entry_count, file_count, total_size }` |
 | `detect_file_type` | (no CLI equivalent — read magic bytes manually) | `input_path` | — | `{ ok, file_type }` |
 | `supported_formats` | `magic-pack --help` | — | — | `{ ok, formats: [...] }` |
 
